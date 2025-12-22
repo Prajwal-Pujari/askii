@@ -1,0 +1,175 @@
+.studio {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  position: relative;
+  /*padding-top: 80px;  Account for navbar */
+}
+
+.canvas-container {
+  flex: 1;
+  width: 100%;
+  height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  background: #000;
+}
+
+#canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.controls {
+  position: fixed;
+  top: 10px;
+  left: 24px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(12px);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+
+.control-group {
+  display: flex;
+  gap: 8px;
+}
+
+.divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn svg {
+  opacity: 0.8;
+}
+
+.mode-btn, .filter-btn, .toggle-btn {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.mode-btn:hover, .filter-btn:hover, .toggle-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mode-btn.active, .filter-btn.active, .toggle-btn.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.info {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(12px);
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 100;
+}
+
+.hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .studio {
+    padding-top: 70px;
+  }
+
+  .canvas-container {
+    height: calc(100vh - 70px);
+  }
+
+  .controls {
+    top: 90px;
+    left: 12px;
+    right: 12px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+  }
+
+  .btn {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  .mode-btn, .filter-btn, .toggle-btn {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .info {
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+    text-align: center;
+  }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .controls {
+    top: 80px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-height: 60vh;
+  }
+}
