@@ -747,16 +747,14 @@ furnished to do so, subject to the following conditions:
 - [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen) - Rust/JS interop
 - [Vite](https://vitejs.dev/) - Build tooling
 - [MDN Web Docs](https://developer.mozilla.org/) - Canvas API reference
-- ASCII Art Community - Inspiration and techniques
 
 ---
 
 
 <div align="center">
 
-**Built with ❤️ using Rust, WebAssembly, and TypeScript**
+**Built with using Rust, WebAssembly, and TypeScript**
 
-Made with 🦀 Rust and ⚡ TypeScript
 
 [⬆ Back to top](#askii---real-time-ascii-art-studio)
 
