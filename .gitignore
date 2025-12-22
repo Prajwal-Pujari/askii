@@ -21,12 +21,12 @@ src/wasm/target/
 src/wasm/Cargo.lock
 
 # WebAssembly compiled output
-public/wasm/*.js
-public/wasm/*.wasm
-public/wasm/*.d.ts
-public/wasm/*.txt
-public/wasm/package.json
-!public/wasm/.gitkeep
+# public/wasm/*.js
+# public/wasm/*.wasm
+# public/wasm/*.d.ts
+# public/wasm/*.txt
+# public/wasm/package.json
+# !public/wasm/.gitkeep
 
 # SSL Certificates (mkcert)
 *.pem
