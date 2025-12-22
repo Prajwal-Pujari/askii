@@ -41,13 +41,7 @@ export class LandingPage implements Page {
             <div class="hero-visual">
               <div class="ascii-preview">
                 <pre class="ascii-art">
-    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-    ⣿⣿⣿⣿⠟⠋⠉⠉⠛⢿⣿⣿⣿⣿⣿
-    ⣿⣿⣿⠃⠄⠄⠄⠄⠄⠄⠹⣿⣿⣿⣿
-    ⣿⣿⡏⠄⠄⠄⠄⠄⠄⠄⠄⢻⣿⣿⣿
-    ⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⣼⣿⣿⣿
-    ⣿⣿⣿⣷⣄⠄⠄⠄⠄⣀⣾⣿⣿⣿⣿
-    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+                // 
                 </pre>
               </div>
             </div>
