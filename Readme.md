@@ -5,7 +5,7 @@
 
 **Transform reality into stunning ASCII art in real-time**
 
-[Roadmap](roadmap) • [Contributing](contributing)
+[Roadmap](-roadmap) • [Contributing](-contributing)
 
 </div>
 
@@ -13,17 +13,17 @@
 
 ## 📖 Table of Contents
 
-- [Overview](#-overview)
-- [Features](#-features)
-- [Tech Stack](#️-tech-stack)
-- [Architecture](#️-architecture)
-- [Getting Started](#-getting-started)
+- [Overview](-overview)
+- [Features](-features)
+- [Tech Stack](-tech-stack)
+- [Architecture](-architecture)
+- [Getting Started](-getting-started)
 - [Project Structure](#-project-structure)
-- [How It Works](#-how-it-works)
-- [Performance](#-performance)
-- [Roadmap](#️-roadmap)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [How It Works](-how-it-works)
+- [Performance](-performance)
+- [Roadmap](-roadmap)
+- [Contributing](-contributing)
+- [License](-license)
 
 ---
 
