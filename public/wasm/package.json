@@ -1,0 +1,15 @@
+{
+  "name": "askii-wasm",
+  "type": "module",
+  "version": "0.1.1",
+  "files": [
+    "askii_wasm_bg.wasm",
+    "askii_wasm.js",
+    "askii_wasm.d.ts"
+  ],
+  "main": "askii_wasm.js",
+  "types": "askii_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
