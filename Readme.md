@@ -5,7 +5,7 @@
 
 **Transform reality into stunning ASCII art in real-time**
 
-[Demo](https://askii.art) • [Documentation](https://docs.askii.art) • [Roadmap](#-roadmap) • [Contributing](#-contributing)
+[Roadmap](roadmap) • [Contributing](contributing)
 
 </div>
 
