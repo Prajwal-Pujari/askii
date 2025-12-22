@@ -28,20 +28,14 @@ export class LandingPage implements Page {
                   </svg>
                   Launch Studio
                 </a>
-                <a href="#demo" class="btn btn-secondary btn-large">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polygon points="10 8 16 12 10 16 10 8"></polygon>
-                  </svg>
-                  Watch Demo
-                </a>
+               
               </div>
             </div>
 
             <div class="hero-visual">
               <div class="ascii-preview">
                 <pre class="ascii-art">
-                // 
+         
                 </pre>
               </div>
             </div>

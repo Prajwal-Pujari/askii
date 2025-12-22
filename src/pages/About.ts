@@ -30,7 +30,7 @@ export class AboutPage implements Page {
             <section class="about-section">
               <h2>Open Source</h2>
               <p>Askii is open source and available on GitHub. Contributions are welcome!</p>
-              <a href="https://github.com/yourusername/askii" class="btn btn-primary" target="_blank">View on GitHub</a>
+              <a href="https://github.com/Prajwal-Pujari/askii.git" class="btn btn-primary" target="_blank">View on GitHub</a>
             </section>
           </div>
         </div>

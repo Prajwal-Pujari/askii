@@ -28,15 +28,14 @@ export class Footer {
 
             <div class="footer-column">
               <h4>Connect</h4>
-              <a href="https://github.com" target="_blank">GitHub</a>
-              <a href="https://twitter.com" target="_blank">Twitter</a>
-              <a href="mailto:hello@askii.art">Contact</a>
+              <a href="https://github.com/Prajwal-Pujari/askii" target="_blank">GitHub</a>
+              <a href="https://x.com/Gravity_Exists" target="_blank">Twitter</a>
             </div>
           </div>
         </div>
 
         <div class="footer-bottom">
-          <p>&copy; 2024 Askii. Built with Rust & WebAssembly.</p>
+          <p>&copy; 2025 Askii. Built with Rust & WebAssembly.</p>
         </div>
       </footer>
     `;

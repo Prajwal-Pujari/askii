@@ -11,7 +11,7 @@ export class Navbar {
           <div class="nav-menu" id="navMenu">
             <a href="/" class="nav-link" data-link>Home</a>
             <a href="/studio" class="nav-link" data-link>Studio</a>
-            <a href="/gallery" class="nav-link" data-link>Gallery</a>
+            
             <a href="/about" class="nav-link" data-link>About</a>
           </div>
 
