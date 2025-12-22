@@ -2,10 +2,9 @@
 
 <div align="center">
 
-
 **Transform reality into stunning ASCII art in real-time**
 
-[Roadmap](-roadmap) • [Contributing](-contributing)
+ [🎯 Roadmap](#-roadmap) • [🤝 Contributing](#-contributing)
 
 </div>
 
@@ -13,25 +12,25 @@
 
 ## 📖 Table of Contents
 
-- [Overview](-overview)
-- [Features](-features)
-- [Tech Stack](-tech-stack)
-- [Architecture](-architecture)
-- [Getting Started](-getting-started)
+- [Overview](#-overview)
+- [Features](#-features)
+- [Tech Stack](#️-tech-stack)
+- [Architecture](#️-architecture)
+- [Getting Started](#-getting-started)
 - [Project Structure](#-project-structure)
-- [How It Works](-how-it-works)
-- [Performance](-performance)
-- [Roadmap](-roadmap)
-- [Contributing](-contributing)
-- [License](-license)
+- [How It Works](#-how-it-works)
+- [Performance](#-performance)
+- [Roadmap](#️-roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
-## Overview
+## 🎯 Overview
 
-Askii is a cutting-edge web application that converts images and live webcam feeds into ASCII art in real-time. 
+Askii is a cutting-edge web application that converts images and live webcam feeds into ASCII art in real-time.
 
-## Features
+## ✨ Features
 
 ### Current Features (v1.0)
 
@@ -87,7 +86,7 @@ Askii is a cutting-edge web application that converts images and live webcam fee
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
 ### System Overview
 
@@ -155,7 +154,7 @@ Askii is a cutting-edge web application that converts images and live webcam fee
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -220,7 +219,7 @@ npm run preview
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 askii/
@@ -261,7 +260,7 @@ askii/
 
 ---
 
-##  How It Works
+## 🔬 How It Works
 
 ### 1. Image Capture
 
@@ -390,9 +389,9 @@ for (let y = 0; y < gridHeight; y++) {
 
 ---
 
-## Roadmap
+## 🗺️ Roadmap
 
-### Phase 1: Video Recording & Playback (Next)
+### Phase 1: Video Recording & Playback ✨ (Next)
 
 **Timeline**: Q1 2025
 
@@ -435,7 +434,7 @@ interface AskiiRecording {
 
 ---
 
-### Phase 2: ASCII Art Styles & Filters 
+### Phase 2: ASCII Art Styles & Filters 🎨
 
 **Timeline**: Q2 2025
 
@@ -476,7 +475,7 @@ pub fn apply_style_preset(
 
 ---
 
-### Phase 3: Real-Time Collaboration 
+### Phase 3: Real-Time Collaboration 🌐
 
 **Timeline**: Q3 2025
 
@@ -513,7 +512,7 @@ Client A ←→ WebSocket Server ←→ Client B
 
 ---
 
-### Phase 4: Advanced Features 
+### Phase 4: Advanced Features 🚀
 
 **Timeline**: Q4 2025 & Beyond
 
@@ -553,7 +552,7 @@ Client A ←→ WebSocket Server ←→ Client B
 
 ---
 
-## Technical Challenges & Solutions
+## 🏗️ Technical Challenges & Solutions
 
 ### Challenge 1: Performance at Scale
 
@@ -597,7 +596,7 @@ Client A ←→ WebSocket Server ←→ Client B
 
 ---
 
-##  Contributing
+## 🤝 Contributing
 
 We welcome contributions! Here's how to get started:
 
@@ -651,17 +650,17 @@ We welcome contributions! Here's how to get started:
 
 ### Areas We Need Help
 
--  UI/UX design improvements
--  Mobile browser optimization
--  Internationalization (i18n)
--  Documentation and tutorials
--  Bug reports and fixes
--  New filter algorithms
--  Performance benchmarking
+- 🎨 UI/UX design improvements
+- 📱 Mobile browser optimization
+- 🌐 Internationalization (i18n)
+- 📚 Documentation and tutorials
+- 🐛 Bug reports and fixes
+- ✨ New filter algorithms
+- 🧪 Performance benchmarking
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues
 
@@ -707,7 +706,7 @@ cd ../..
 
 ---
 
-## Project Stats
+## 📊 Project Stats
 
 ![GitHub stars](https://img.shields.io/github/stars/yourusername/askii?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/yourusername/askii?style=social)
@@ -722,7 +721,7 @@ cd ../..
 
 ---
 
-## License
+## 📄 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
@@ -743,7 +742,7 @@ furnished to do so, subject to the following conditions:
 
 ---
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 - [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen) - Rust/JS interop
 - [Vite](https://vitejs.dev/) - Build tooling
@@ -755,9 +754,9 @@ furnished to do so, subject to the following conditions:
 
 <div align="center">
 
-**Built with using Rust, WebAssembly, and TypeScript**
+**Built with ❤️ using Rust, WebAssembly, and TypeScript**
 
-Made with Rust and TypeScript
+Made with 🦀 Rust and ⚡ TypeScript
 
 [⬆ Back to top](#askii---real-time-ascii-art-studio)
 
