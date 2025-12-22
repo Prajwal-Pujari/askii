@@ -19,7 +19,7 @@ export class LandingPage implements Page {
               </h1>
               <p class="hero-description">
                 Convert images and live webcam feeds into stunning ASCII art in real-time. 
-                Powered by WebAssembly for blazing-fast performance.
+                Powered by WebAssembly and Rust.
               </p>
               <div class="hero-actions">
                 <a href="/studio" class="btn btn-primary btn-large" data-link>

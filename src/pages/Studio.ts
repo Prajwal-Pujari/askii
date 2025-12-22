@@ -16,6 +16,7 @@ export class StudioPage implements Page {
   private readonly BLOCK_SIZE = 8;
   private targetWidth: number = 0;
   private targetHeight: number = 0;
+  private isControlsCollapsed: boolean = false;
 
   render(): string {
     return `
@@ -27,6 +28,15 @@ export class StudioPage implements Page {
         </div>
         
         <div class="controls">
+        <button id="toggleControlsBtn" class="toggle-controls-btn" title="Toggle Controls">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        
+        <div class="controls-content">
           <div class="control-group">
             <button id="cameraBtn" class="btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -80,6 +90,7 @@ export class StudioPage implements Page {
             <button id="exportBtn" class="btn">Export</button>
           </div>
         </div>
+      </div>
 
         <div class="info">
           <span class="hint">Scroll: zoom • Drag: pan</span>
@@ -92,6 +103,7 @@ export class StudioPage implements Page {
     Navbar.mount();
     await this.initStudio();
     this.setupResizeHandler();
+    this.setupControlsToggle();
   }
 
   unmount() {
@@ -115,6 +127,25 @@ export class StudioPage implements Page {
       this.processFrameData(this.currentFrameData.data, this.currentFrameData.width, this.currentFrameData.height);
     }
   }
+
+  private setupControlsToggle() {
+  const toggleBtn = document.getElementById('toggleControlsBtn');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      this.isControlsCollapsed = !this.isControlsCollapsed;
+      const controls = document.querySelector('.controls');
+      const controlsContent = document.querySelector('.controls-content');
+      
+      if (this.isControlsCollapsed) {
+        controls?.classList.add('collapsed');
+        controlsContent?.classList.add('hidden');
+      } else {
+        controls?.classList.remove('collapsed');
+        controlsContent?.classList.remove('hidden');
+      }
+    });
+  }
+}
 
   private calculateTargetDimensions(imageWidth: number, imageHeight: number) {
     const container = document.querySelector('.canvas-container') as HTMLElement;
@@ -413,58 +444,40 @@ export class StudioPage implements Page {
   }
 
   private showErrorMessage(text: string) {
-    const message = document.createElement('div');
-    message.style.cssText = `
-      position: fixed;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(239, 68, 68, 0.95);
-      color: white;
-      padding: 16px 24px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      z-index: 10000;
-      max-width: 90%;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    `;
-    message.textContent = text;
-    document.body.appendChild(message);
+  const message = document.createElement('div');
+  message.className = 'toast-message toast-error';
+  message.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="15" y1="9" x2="9" y2="15"></line>
+      <line x1="9" y1="9" x2="15" y2="15"></line>
+    </svg>
+    <span>${text}</span>
+  `;
+  document.body.appendChild(message);
 
-    setTimeout(() => {
-      message.style.transition = 'opacity 0.3s ease';
-      message.style.opacity = '0';
-      setTimeout(() => message.remove(), 300);
-    }, 5000);
-  }
+  setTimeout(() => message.classList.add('show'), 10);
+  setTimeout(() => {
+    message.classList.remove('show');
+    setTimeout(() => message.remove(), 300);
+  }, 3000);
+}
 
   private showSuccessMessage(text: string) {
-    const message = document.createElement('div');
-    message.style.cssText = `
-      position: fixed;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(34, 197, 94, 0.95);
-      color: white;
-      padding: 16px 24px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      z-index: 10000;
-      max-width: 90%;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    `;
-    message.textContent = text;
-    document.body.appendChild(message);
+  const message = document.createElement('div');
+  message.className = 'toast-message toast-success';
+  message.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span>${text}</span>
+  `;
+  document.body.appendChild(message);
 
-    setTimeout(() => {
-      message.style.transition = 'opacity 0.3s ease';
-      message.style.opacity = '0';
-      setTimeout(() => message.remove(), 300);
-    }, 3000);
-  }
+  setTimeout(() => message.classList.add('show'), 10);
+  setTimeout(() => {
+    message.classList.remove('show');
+    setTimeout(() => message.remove(), 300);
+  }, 3000);
+}
 }

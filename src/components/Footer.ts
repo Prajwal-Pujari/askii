@@ -15,15 +15,12 @@ export class Footer {
             <div class="footer-column">
               <h4>Product</h4>
               <a href="/studio" data-link>Studio</a>
-              <a href="/gallery" data-link>Gallery</a>
-              <a href="#features">Features</a>
             </div>
 
             <div class="footer-column">
               <h4>Resources</h4>
               <a href="/about" data-link>About</a>
-              <a href="#docs">Documentation</a>
-              <a href="#api">API</a>
+
             </div>
 
             <div class="footer-column">

@@ -1,6 +1,7 @@
 import type { Page } from '../router/Router';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
+import '../styles/about.css';
 
 export class AboutPage implements Page {
   render(): string {
