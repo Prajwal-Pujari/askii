@@ -39,11 +39,12 @@ export class StudioPage implements Page {
         <div class="controls-content">
           <div class="control-group">
             <button id="cameraBtn" class="btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg id="cameraIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                 <circle cx="12" cy="13" r="4"></circle>
               </svg>
-              Camera
+              <span id="cameraText">Camera</span>
+              <span id="cameraStatus" class="camera-status"></span>
             </button>
             
             <button id="switchCameraBtn" class="btn" style="display: none;">
@@ -87,7 +88,24 @@ export class StudioPage implements Page {
 
           <div class="control-group">
             <button id="detailBtn" class="toggle-btn">Detail</button>
-            <button id="exportBtn" class="btn">Export</button>
+            <div class="export-dropdown">
+              <button id="exportBtn" class="btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="export-menu">
+                <button id="exportTxtBtn" class="export-option">Export as TXT</button>
+                <button id="exportJpgBtn" class="export-option">Export as JPG</button>
+                
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -176,7 +194,7 @@ export class StudioPage implements Page {
       const canvas = document.getElementById('canvas') as HTMLCanvasElement;
       this.renderer = new AsciiRenderer(canvas);
 
-      document.getElementById('cameraBtn')!.addEventListener('click', () => this.startCamera());
+      document.getElementById('cameraBtn')!.addEventListener('click', () => this.toggleCamera());
       document.getElementById('switchCameraBtn')!.addEventListener('click', () => this.switchCamera());
       document.getElementById('uploadBtn')!.addEventListener('click', () => {
         document.getElementById('fileInput')!.click();
@@ -192,7 +210,43 @@ export class StudioPage implements Page {
       document.getElementById('contrastFilterBtn')!.addEventListener('click', () => this.setFilter('contrast'));
 
       document.getElementById('detailBtn')!.addEventListener('click', () => this.toggleDetail());
-      document.getElementById('exportBtn')!.addEventListener('click', () => this.exportAsText());
+     const exportBtn = document.getElementById('exportBtn')!;
+    const exportDropdown = document.querySelector('.export-dropdown')!;
+    
+
+   exportBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  exportDropdown.classList.toggle('show-menu');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const target = e.target as HTMLElement;
+  if (!exportDropdown.contains(target)) {
+    exportDropdown.classList.remove('show-menu');
+  }
+});
+
+// Prevent dropdown from closing when clicking inside it
+exportDropdown.addEventListener('click', (e) => {
+  e.stopPropagation();
+});
+
+document.getElementById('exportTxtBtn')!.addEventListener('click', () => {
+  exportDropdown.classList.remove('show-menu');
+  this.exportAsText();
+});
+
+document.getElementById('exportJpgBtn')!.addEventListener('click', () => {
+  exportDropdown.classList.remove('show-menu');
+  this.exportAsJPG();
+});
+
+// document.getElementById('exportPdfBtn')!.addEventListener('click', () => {
+//   exportDropdown.classList.remove('show-menu');
+//   this.exportAsPDF();
+// });
+
 
       this.renderer.onZoomChange(() => {
         if (this.currentFrameData) {
@@ -235,33 +289,76 @@ export class StudioPage implements Page {
     }
   }
 
-  private async startCamera() {
-    try {
-      if (!this.camera) {
-        this.camera = new CameraController();
-      }
-
-      await this.camera.start(true);
-      
-      const resolution = this.camera.getResolution();
-      console.log('Camera started:', {
-        facingMode: this.camera.getCurrentFacingMode(),
-        resolution: `${resolution.width}x${resolution.height}`
-      });
-
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const switchBtn = document.getElementById('switchCameraBtn');
-      if (isMobile && switchBtn) {
-        switchBtn.style.display = 'flex';
-      }
-
-      this.showSuccessMessage('Camera started successfully!');
-      this.processLoop();
-    } catch (error) {
-      console.error('Failed to start camera:', error);
-      this.showErrorMessage('Failed to start camera. Please check permissions.');
-    }
+  private async toggleCamera() {
+  if (this.camera?.isActive()) {
+    // Stop camera
+    this.stopCamera();
+  } else {
+    // Start camera
+    await this.startCamera();
   }
+}
+
+private stopCamera() {
+  if (this.animationId) {
+    cancelAnimationFrame(this.animationId);
+    this.animationId = null;
+  }
+  
+  if (this.camera) {
+    this.camera.stop();
+  }
+
+  // Update UI
+  const cameraBtn = document.getElementById('cameraBtn');
+  const cameraText = document.getElementById('cameraText');
+  const cameraStatus = document.getElementById('cameraStatus');
+  const switchBtn = document.getElementById('switchCameraBtn');
+  
+  if (cameraBtn) cameraBtn.classList.remove('camera-active');
+  if (cameraText) cameraText.textContent = 'Camera';
+  if (cameraStatus) cameraStatus.classList.remove('active');
+  if (switchBtn) switchBtn.style.display = 'none';
+  
+  this.showSuccessMessage('Camera stopped');
+}
+
+ private async startCamera() {
+  try {
+    if (!this.camera) {
+      this.camera = new CameraController();
+    }
+
+    await this.camera.start(true);
+    
+    const resolution = this.camera.getResolution();
+    console.log('Camera started:', {
+      facingMode: this.camera.getCurrentFacingMode(),
+      resolution: `${resolution.width}x${resolution.height}`
+    });
+
+    // Update UI to show camera is active
+    const cameraBtn = document.getElementById('cameraBtn');
+    const cameraText = document.getElementById('cameraText');
+    const cameraStatus = document.getElementById('cameraStatus');
+    
+    if (cameraBtn) cameraBtn.classList.add('camera-active');
+    if (cameraText) cameraText.textContent = 'Stop Camera';
+    if (cameraStatus) cameraStatus.classList.add('active');
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const switchBtn = document.getElementById('switchCameraBtn');
+    if (isMobile && switchBtn) {
+      switchBtn.style.display = 'flex';
+    }
+
+    this.showSuccessMessage('Camera started successfully!');
+    this.processLoop();
+  } catch (error) {
+    console.error('Failed to start camera:', error);
+    this.showErrorMessage('Failed to start camera. Please check permissions.');
+  }
+}
 
   private async switchCamera() {
     if (!this.camera?.isActive()) {
@@ -306,6 +403,10 @@ export class StudioPage implements Page {
         switchBtn.style.display = 'none';
       }
     }
+
+    if (this.camera?.isActive()) {
+    this.stopCamera();
+  }
 
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
@@ -442,6 +543,144 @@ export class StudioPage implements Page {
       this.showErrorMessage('Failed to export ASCII art');
     }
   }
+  private exportAsJPG() {
+  if (!this.renderer) {
+    this.showErrorMessage('No renderer available');
+    return;
+  }
+
+  try {
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        this.showErrorMessage('Failed to create image');
+        return;
+      }
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `askii-art-${Date.now()}.jpg`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      this.showSuccessMessage('Image exported successfully!');
+    }, 'image/jpeg', 0.95);
+  } catch (error) {
+    console.error('Export error:', error);
+    this.showErrorMessage('Failed to export image');
+  }
+}
+
+// private async exportAsPDF() {
+//   if (!this.renderer) {
+//     this.showErrorMessage('No renderer available');
+//     return;
+//   }
+
+//   try {
+//     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    
+//     // Create a temporary canvas with white background
+//     const tempCanvas = document.createElement('canvas');
+//     tempCanvas.width = canvas.width;
+//     tempCanvas.height = canvas.height;
+//     const ctx = tempCanvas.getContext('2d')!;
+    
+//     // Fill with white background
+//     ctx.fillStyle = '#ffffff';
+//     ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    
+//     // Draw the ASCII art on top
+//     ctx.drawImage(canvas, 0, 0);
+    
+//     // Convert to blob
+//     const blob = await new Promise<Blob>((resolve) => {
+//       tempCanvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 0.95);
+//     });
+    
+//     // Create PDF with embedded image
+//     const link = document.createElement('a');
+//     link.download = `askii-art-${Date.now()}.pdf`;
+    
+//     const reader = new FileReader();
+//     reader.onload = () => {
+//       const base64 = (reader.result as string).split(',')[1];
+//       const pdfBlob = this.createSimplePDF(canvas.width, canvas.height, base64);
+//       const url = URL.createObjectURL(pdfBlob);
+//       link.href = url;
+//       link.click();
+//       URL.revokeObjectURL(url);
+//       this.showSuccessMessage('PDF exported successfully!');
+//     };
+//     reader.readAsDataURL(blob);
+//   } catch (error) {
+//     console.error('Export error:', error);
+//     this.showErrorMessage('Failed to export PDF');
+//   }
+// }
+
+//       private createSimplePDF(width: number, height: number, imageBase64: string): Blob {
+//         // A4 dimensions in points
+//         const pageWidth = 595;
+//         const pageHeight = 842;
+//         const margin = 40;
+        
+//         // Calculate scaled dimensions
+//         const imgAspect = width / height;
+//         let imgWidth = pageWidth - margin * 2;
+//         let imgHeight = imgWidth / imgAspect;
+        
+//         if (imgHeight > pageHeight - margin * 2) {
+//           imgHeight = pageHeight - margin * 2;
+//           imgWidth = imgHeight * imgAspect;
+//         }
+        
+//         const x = (pageWidth - imgWidth) / 2;
+//         const y = (pageHeight - imgHeight) / 2;
+        
+//         const pdf = `%PDF-1.4
+//       1 0 obj
+//       <</Type/Catalog/Pages 2 0 R>>
+//       endobj
+//       2 0 obj
+//       <</Type/Pages/Count 1/Kids[3 0 R]>>
+//       endobj
+//       3 0 obj
+//       <</Type/Page/Parent 2 0 R/MediaBox[0 0 ${pageWidth} ${pageHeight}]/Contents 4 0 R/Resources<</XObject<</Im1 5 0 R>>>>>>
+//       endobj
+//       4 0 obj
+//       <</Length 45>>
+//       stream
+//       q
+//       ${imgWidth.toFixed(2)} 0 0 ${imgHeight.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm
+//       /Im1 Do
+//       Q
+//       endstream
+//       endobj
+//       5 0 obj
+//       <</Type/XObject/Subtype/Image/Width ${width}/Height ${height}/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ${imageBase64.length}>>
+//       stream
+//       ${atob(imageBase64)}
+//       endstream
+//       endobj
+//       xref
+//       0 6
+//       0000000000 65535 f 
+//       0000000009 00000 n 
+//       0000000058 00000 n 
+//       0000000115 00000 n 
+//       0000000270 00000 n 
+//       0000000364 00000 n 
+//       trailer
+//       <</Size 6/Root 1 0 R>>
+//       startxref
+//       ${550 + imageBase64.length}
+//       %%EOF`;
+        
+//         return new Blob([pdf], { type: 'application/pdf' });
+//       }
 
   private showErrorMessage(text: string) {
   const message = document.createElement('div');

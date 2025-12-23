@@ -3,15 +3,15 @@ export class CameraController {
   private video: HTMLVideoElement;
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private facingMode: 'user' | 'environment' = 'user'; // Front or back camera
+  private facingMode: 'user' | 'environment' = 'user';
 
   constructor() {
     this.video = document.createElement('video');
-    this.video.setAttribute('playsinline', ''); // Critical for iOS
+    this.video.setAttribute('playsinline', '');
     this.video.setAttribute('autoplay', '');
     this.video.setAttribute('muted', '');
-    this.video.style.display = 'none'; // Hide video element
-    document.body.appendChild(this.video); // Must be in DOM for iOS
+    this.video.style.display = 'none';
+    document.body.appendChild(this.video);
     
     this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d')!;
@@ -19,15 +19,14 @@ export class CameraController {
 
   async start(useFrontCamera: boolean = true): Promise<void> {
     try {
-      // Stop existing stream if any
       this.stop();
 
       this.facingMode = useFrontCamera ? 'user' : 'environment';
 
-      // Mobile-optimized constraints
+      // Try exact facingMode first (better for mobile)
       const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: this.facingMode,
+          facingMode: { exact: this.facingMode },
           width: { ideal: 1280, max: 1920 },
           height: { ideal: 720, max: 1080 },
           aspectRatio: { ideal: 16 / 9 }
@@ -35,39 +34,60 @@ export class CameraController {
         audio: false
       };
 
-      // Try with facingMode first
       try {
         this.stream = await navigator.mediaDevices.getUserMedia(constraints);
       } catch (err) {
-        console.warn('Failed with facingMode, trying without:', err);
+        console.warn('Failed with exact facingMode, trying ideal:', err);
         
-        // Fallback: try without facingMode (for older browsers)
+        // Fallback to ideal facingMode
         const fallbackConstraints: MediaStreamConstraints = {
           video: {
+            facingMode: { ideal: this.facingMode },
             width: { ideal: 1280, max: 1920 },
             height: { ideal: 720, max: 1080 }
           },
           audio: false
         };
-        this.stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+        
+        try {
+          this.stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+        } catch (err2) {
+          console.warn('Failed with ideal facingMode, trying basic:', err2);
+          
+          // Last fallback: basic constraints
+          const basicConstraints: MediaStreamConstraints = {
+            video: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            },
+            audio: false
+          };
+          this.stream = await navigator.mediaDevices.getUserMedia(basicConstraints);
+        }
       }
 
-      // Set video source
       this.video.srcObject = this.stream;
 
-      // Wait for video to be ready
       await new Promise<void>((resolve, reject) => {
         this.video.onloadedmetadata = () => {
           this.video.play()
             .then(() => {
               console.log('Camera started successfully');
+              console.log(`Facing mode: ${this.facingMode}`);
               console.log(`Resolution: ${this.video.videoWidth}x${this.video.videoHeight}`);
+              
+              // Log actual facing mode from track settings
+              const videoTrack = this.stream?.getVideoTracks()[0];
+              if (videoTrack) {
+                const settings = videoTrack.getSettings();
+                console.log('Actual camera facing mode:', settings.facingMode);
+              }
+              
               resolve();
             })
             .catch(reject);
         };
 
-        // Timeout after 10 seconds
         setTimeout(() => reject(new Error('Camera timeout')), 10000);
       });
 
@@ -79,8 +99,8 @@ export class CameraController {
   }
 
   async switchCamera(): Promise<void> {
-    const newFacingMode = this.facingMode === 'user' ? 'environment' : 'user';
-    await this.start(newFacingMode === 'user');
+    const useFrontCamera = this.facingMode === 'environment'; // Switch to opposite
+    await this.start(useFrontCamera);
   }
 
   stop(): void {
@@ -140,11 +160,30 @@ export class CameraController {
     return this.facingMode;
   }
 
+  getActualFacingMode(): string | undefined {
+    const videoTrack = this.stream?.getVideoTracks()[0];
+    if (videoTrack) {
+      const settings = videoTrack.getSettings();
+      return settings.facingMode;
+    }
+    return undefined;
+  }
+
   getResolution(): { width: number; height: number } {
     return {
       width: this.video.videoWidth,
       height: this.video.videoHeight
     };
+  }
+
+  async getAvailableCameras(): Promise<MediaDeviceInfo[]> {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      return devices.filter(device => device.kind === 'videoinput');
+    } catch (error) {
+      console.error('Failed to enumerate devices:', error);
+      return [];
+    }
   }
 
   private handleCameraError(error: any): void {
@@ -157,19 +196,16 @@ export class CameraController {
     } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
       errorMessage = 'Camera is already in use by another application.';
     } else if (error.name === 'OverconstrainedError') {
-      errorMessage = 'Camera does not support the requested settings.';
+      errorMessage = 'The requested camera is not available. Trying default camera...';
     } else if (error.name === 'SecurityError') {
       errorMessage = 'Camera access requires HTTPS. Please use https:// or localhost.';
     }
 
     console.error(errorMessage, error);
-    
-    // Show user-friendly error message
     this.showErrorMessage(errorMessage);
   }
 
   private showErrorMessage(message: string): void {
-    // Create error notification
     const errorDiv = document.createElement('div');
     errorDiv.style.cssText = `
       position: fixed;
@@ -190,7 +226,6 @@ export class CameraController {
     errorDiv.textContent = message;
     document.body.appendChild(errorDiv);
 
-    // Auto-remove after 5 seconds
     setTimeout(() => {
       errorDiv.remove();
     }, 5000);
