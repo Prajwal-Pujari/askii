@@ -360,23 +360,51 @@ private stopCamera() {
   }
 }
 
-  private async switchCamera() {
-    if (!this.camera?.isActive()) {
-      this.showErrorMessage('Camera is not active');
-      return;
-    }
-
-    try {
-      await this.camera.switchCamera();
-      const newMode = this.camera.getCurrentFacingMode();
-      console.log('Camera switched to:', newMode);
-      this.showSuccessMessage(`Switched to ${newMode === 'user' ? 'front' : 'back'} camera`);
-    } catch (error) {
-      console.error('Failed to switch camera:', error);
-      this.showErrorMessage('Failed to switch camera');
-    }
+ private async switchCamera() {
+  if (!this.camera?.isActive()) {
+    this.showErrorMessage('Camera is not active');
+    return;
   }
 
+  try {
+    const beforeFacingMode = this.camera.getCurrentFacingMode();
+    const beforeActualMode = this.camera.getActualFacingMode();
+    
+    console.log('Before switch - Requested:', beforeFacingMode, 'Actual:', beforeActualMode);
+    
+    await this.camera.switchCamera();
+    
+    // Give camera a moment to stabilize
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const afterFacingMode = this.camera.getCurrentFacingMode();
+    const afterActualMode = this.camera.getActualFacingMode();
+    
+    console.log('After switch - Requested:', afterFacingMode, 'Actual:', afterActualMode);
+    
+    // Check if camera actually switched
+    if (afterActualMode && afterActualMode === beforeActualMode) {
+      this.showErrorMessage('Camera did not switch. Your device may only have one camera.');
+      return;
+    }
+    
+    const cameraName = afterFacingMode === 'user' ? 'front' : 'back';
+    const actualCameraName = afterActualMode === 'user' ? 'front' : 
+                            afterActualMode === 'environment' ? 'back' : 'unknown';
+    
+    const resolution = this.camera.getResolution();
+    const message = `Switched to ${cameraName} camera (${actualCameraName}) - ${resolution.width}x${resolution.height}`;
+    
+    this.showSuccessMessage(message);
+    
+    // Log camera info
+    console.log(`Cameras available: ${this.camera.getCameraCount()}`);
+    
+  } catch (error) {
+    console.error('Failed to switch camera:', error);
+    this.showErrorMessage('Failed to switch camera. Check console for details.');
+  }
+}
   private processLoop = () => {
     if (!this.camera?.isActive()) return;
 

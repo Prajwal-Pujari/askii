@@ -4,6 +4,8 @@ export class CameraController {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private facingMode: 'user' | 'environment' = 'user';
+  private availableCameras: MediaDeviceInfo[] = [];
+  private currentCameraIndex: number = 0;
 
   constructor() {
     this.video = document.createElement('video');
@@ -21,75 +23,26 @@ export class CameraController {
     try {
       this.stop();
 
+      // Enumerate cameras first
+      await this.enumerateCameras();
+      
       this.facingMode = useFrontCamera ? 'user' : 'environment';
 
-      // Try exact facingMode first (better for mobile)
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: { exact: this.facingMode },
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 },
-          aspectRatio: { ideal: 16 / 9 }
-        },
-        audio: false
-      };
+      console.log('=== Starting Camera ===');
+      console.log('Requested facing mode:', this.facingMode);
+      console.log('Available cameras:', this.availableCameras.length);
+      this.availableCameras.forEach((cam, idx) => {
+        console.log(`Camera ${idx}:`, cam.label || `Camera ${idx}`, cam.deviceId.substring(0, 20));
+      });
 
-      try {
-        this.stream = await navigator.mediaDevices.getUserMedia(constraints);
-      } catch (err) {
-        console.warn('Failed with exact facingMode, trying ideal:', err);
-        
-        // Fallback to ideal facingMode
-        const fallbackConstraints: MediaStreamConstraints = {
-          video: {
-            facingMode: { ideal: this.facingMode },
-            width: { ideal: 1280, max: 1920 },
-            height: { ideal: 720, max: 1080 }
-          },
-          audio: false
-        };
-        
-        try {
-          this.stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
-        } catch (err2) {
-          console.warn('Failed with ideal facingMode, trying basic:', err2);
-          
-          // Last fallback: basic constraints
-          const basicConstraints: MediaStreamConstraints = {
-            video: {
-              width: { ideal: 1280 },
-              height: { ideal: 720 }
-            },
-            audio: false
-          };
-          this.stream = await navigator.mediaDevices.getUserMedia(basicConstraints);
-        }
+      // Try device-specific approach first if we have multiple cameras
+      if (this.availableCameras.length > 1) {
+        const success = await this.startWithDeviceId();
+        if (success) return;
       }
 
-      this.video.srcObject = this.stream;
-
-      await new Promise<void>((resolve, reject) => {
-        this.video.onloadedmetadata = () => {
-          this.video.play()
-            .then(() => {
-              console.log('Camera started successfully');
-              console.log(`Facing mode: ${this.facingMode}`);
-              console.log(`Resolution: ${this.video.videoWidth}x${this.video.videoHeight}`);
-              
-              // Log actual facing mode from track settings
-              const videoTrack = this.stream?.getVideoTracks()[0];
-              if (videoTrack) {
-                const settings = videoTrack.getSettings();
-                console.log('Actual camera facing mode:', settings.facingMode);
-              }
-              
-              resolve();
-            })
-            .catch(reject);
-        };
-
-        setTimeout(() => reject(new Error('Camera timeout')), 10000);
-      });
+      // Fallback to facingMode approach
+      await this.startWithFacingMode();
 
     } catch (error) {
       console.error('Camera error:', error);
@@ -98,8 +51,150 @@ export class CameraController {
     }
   }
 
+  private async enumerateCameras(): Promise<void> {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      this.availableCameras = devices.filter(device => device.kind === 'videoinput');
+    } catch (error) {
+      console.error('Failed to enumerate cameras:', error);
+      this.availableCameras = [];
+    }
+  }
+
+  private async startWithDeviceId(): Promise<boolean> {
+    // Find camera by facing mode preference
+    const preferredCamera = this.availableCameras.find(cam => {
+      const label = cam.label.toLowerCase();
+      if (this.facingMode === 'environment') {
+        return label.includes('back') || label.includes('rear') || label.includes('environment');
+      } else {
+        return label.includes('front') || label.includes('user') || label.includes('face');
+      }
+    });
+
+    const targetCamera = preferredCamera || this.availableCameras[this.currentCameraIndex];
+    
+    if (!targetCamera) return false;
+
+    console.log('Trying specific device:', targetCamera.label, targetCamera.deviceId.substring(0, 20));
+
+    try {
+      const constraints: MediaStreamConstraints = {
+        video: {
+          deviceId: { exact: targetCamera.deviceId },
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 }
+        },
+        audio: false
+      };
+
+      this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+      await this.setupVideoStream();
+      
+      console.log('✓ Successfully started with deviceId');
+      return true;
+    } catch (error) {
+      console.warn('Failed with deviceId:', error);
+      return false;
+    }
+  }
+
+  private async startWithFacingMode(): Promise<void> {
+    console.log('Trying facingMode approach');
+    
+    // Try 1: exact facingMode
+    try {
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: { exact: this.facingMode },
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 }
+        },
+        audio: false
+      };
+
+      this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+      await this.setupVideoStream();
+      console.log('✓ Successfully started with exact facingMode');
+      return;
+    } catch (err) {
+      console.warn('Failed with exact facingMode:', err);
+    }
+
+    // Try 2: ideal facingMode
+    try {
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: { ideal: this.facingMode },
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 }
+        },
+        audio: false
+      };
+
+      this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+      await this.setupVideoStream();
+      console.log('✓ Successfully started with ideal facingMode');
+      return;
+    } catch (err) {
+      console.warn('Failed with ideal facingMode:', err);
+    }
+
+    // Try 3: basic constraints
+    const constraints: MediaStreamConstraints = {
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      },
+      audio: false
+    };
+
+    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+    await this.setupVideoStream();
+    console.log('✓ Successfully started with basic constraints');
+  }
+
+  private async setupVideoStream(): Promise<void> {
+    this.video.srcObject = this.stream;
+
+    await new Promise<void>((resolve, reject) => {
+      this.video.onloadedmetadata = () => {
+        this.video.play()
+          .then(() => {
+            console.log('=== Camera Info ===');
+            console.log('Resolution:', `${this.video.videoWidth}x${this.video.videoHeight}`);
+            
+            const videoTrack = this.stream?.getVideoTracks()[0];
+            if (videoTrack) {
+              const settings = videoTrack.getSettings();
+              console.log('Track settings:', settings);
+              console.log('Actual facingMode:', settings.facingMode || 'unknown');
+              console.log('Device ID:', settings.deviceId?.substring(0, 20) || 'unknown');
+            }
+            
+            resolve();
+          })
+          .catch(reject);
+      };
+
+      setTimeout(() => reject(new Error('Camera timeout')), 10000);
+    });
+  }
+
   async switchCamera(): Promise<void> {
-    const useFrontCamera = this.facingMode === 'environment'; // Switch to opposite
+    console.log('=== Switching Camera ===');
+    console.log('Current facing mode:', this.facingMode);
+    
+    // Method 1: Try cycling through available cameras by deviceId
+    if (this.availableCameras.length > 1) {
+      this.currentCameraIndex = (this.currentCameraIndex + 1) % this.availableCameras.length;
+      const useFrontCamera = this.facingMode === 'environment';
+      await this.start(useFrontCamera);
+      return;
+    }
+
+    // Method 2: Toggle facing mode
+    const useFrontCamera = this.facingMode === 'environment';
     await this.start(useFrontCamera);
   }
 
@@ -176,14 +271,8 @@ export class CameraController {
     };
   }
 
-  async getAvailableCameras(): Promise<MediaDeviceInfo[]> {
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      return devices.filter(device => device.kind === 'videoinput');
-    } catch (error) {
-      console.error('Failed to enumerate devices:', error);
-      return [];
-    }
+  getCameraCount(): number {
+    return this.availableCameras.length;
   }
 
   private handleCameraError(error: any): void {
@@ -196,7 +285,7 @@ export class CameraController {
     } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
       errorMessage = 'Camera is already in use by another application.';
     } else if (error.name === 'OverconstrainedError') {
-      errorMessage = 'The requested camera is not available. Trying default camera...';
+      errorMessage = 'The requested camera is not available. Using default camera...';
     } else if (error.name === 'SecurityError') {
       errorMessage = 'Camera access requires HTTPS. Please use https:// or localhost.';
     }
