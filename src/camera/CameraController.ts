@@ -185,16 +185,20 @@ export class CameraController {
     console.log('=== Switching Camera ===');
     console.log('Current facing mode:', this.facingMode);
     
+    // FIXED: Properly toggle the facing mode
+    // If currently using front camera (user), switch to back (environment)
+    // If currently using back camera (environment), switch to front (user)
+    const newFacingMode = this.facingMode === 'user' ? 'environment' : 'user';
+    const useFrontCamera = newFacingMode === 'user';
+    
+    console.log('Switching to facing mode:', newFacingMode);
+    
     // Method 1: Try cycling through available cameras by deviceId
     if (this.availableCameras.length > 1) {
+      // Increment camera index for next attempt
       this.currentCameraIndex = (this.currentCameraIndex + 1) % this.availableCameras.length;
-      const useFrontCamera = this.facingMode === 'environment';
-      await this.start(useFrontCamera);
-      return;
     }
 
-    // Method 2: Toggle facing mode
-    const useFrontCamera = this.facingMode === 'environment';
     await this.start(useFrontCamera);
   }
 

@@ -360,7 +360,8 @@ private stopCamera() {
   }
 }
 
- private async switchCamera() {
+ // Replace the switchCamera method with this simplified version:
+private async switchCamera() {
   if (!this.camera?.isActive()) {
     this.showErrorMessage('Camera is not active');
     return;
@@ -372,6 +373,8 @@ private stopCamera() {
     
     console.log('Before switch - Requested:', beforeFacingMode, 'Actual:', beforeActualMode);
     
+    // Simply call the camera controller's switch method
+    // It handles all the logic internally now
     await this.camera.switchCamera();
     
     // Give camera a moment to stabilize

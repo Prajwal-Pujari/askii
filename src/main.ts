@@ -1,4 +1,3 @@
-
 import { Router } from './router/Router';
 import { LandingPage } from './pages/Landing';
 import { StudioPage } from './pages/Studio';
