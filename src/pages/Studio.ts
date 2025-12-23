@@ -19,103 +19,111 @@ export class StudioPage implements Page {
   private isControlsCollapsed: boolean = false;
 
   render(): string {
-    return `
-     
+  return `
+   
+    
+    <div class="studio">
+      <div class="canvas-container">
+        <canvas id="canvas"></canvas>
+      </div>
       
-      <div class="studio">
-        <div class="canvas-container">
-          <canvas id="canvas"></canvas>
+      <div class="controls">
+      <button id="toggleControlsBtn" class="toggle-controls-btn" title="Toggle Controls">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+      
+      <div class="controls-content">
+        <div class="control-group">
+          <button id="cameraBtn" class="btn">
+            <svg id="cameraIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <span id="cameraText">Camera</span>
+            <span id="cameraStatus" class="camera-status"></span>
+          </button>
+          
+          <button id="switchCameraBtn" class="btn" style="display: none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="17 1 21 5 17 9"></polyline>
+              <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+              <polyline points="7 23 3 19 7 15"></polyline>
+              <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+            </svg>
+            Flip
+          </button>
+          
+          <button id="uploadBtn" class="btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Upload
+          </button>
+          <input type="file" id="fileInput" accept="image/*" style="display:none;">
+          
+          <button id="removeImageBtn" class="btn" style="display: none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            Remove
+          </button>
         </div>
-        
-        <div class="controls">
-        <button id="toggleControlsBtn" class="toggle-controls-btn" title="Toggle Controls">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-        
-        <div class="controls-content">
-          <div class="control-group">
-            <button id="cameraBtn" class="btn">
-              <svg id="cameraIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-              <span id="cameraText">Camera</span>
-              <span id="cameraStatus" class="camera-status"></span>
-            </button>
-            
-            <button id="switchCameraBtn" class="btn" style="display: none;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="17 1 21 5 17 9"></polyline>
-                <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
-                <polyline points="7 23 3 19 7 15"></polyline>
-                <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
-              </svg>
-              Flip
-            </button>
-            
-            <button id="uploadBtn" class="btn">
+
+        <div class="divider"></div>
+
+        <div class="control-group">
+          <button id="grayscaleBtn" class="mode-btn active">Grayscale</button>
+          <button id="colorBtn" class="mode-btn">Color</button>
+          <button id="ansiBtn" class="mode-btn">ANSI</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="control-group">
+          <button id="noneFilterBtn" class="filter-btn active">Normal</button>
+          <button id="edgeFilterBtn" class="filter-btn">Edge</button>
+          <button id="contrastFilterBtn" class="filter-btn">Contrast</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="control-group">
+          <button id="detailBtn" class="toggle-btn">Detail</button>
+          <div class="export-dropdown">
+            <button id="exportBtn" class="btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
-              Upload
+              Export
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
             </button>
-            <input type="file" id="fileInput" accept="image/*" style="display:none;">
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="control-group">
-            <button id="grayscaleBtn" class="mode-btn active">Grayscale</button>
-            <button id="colorBtn" class="mode-btn">Color</button>
-            <button id="ansiBtn" class="mode-btn">ANSI</button>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="control-group">
-            <button id="noneFilterBtn" class="filter-btn active">Normal</button>
-            <button id="edgeFilterBtn" class="filter-btn">Edge</button>
-            <button id="contrastFilterBtn" class="filter-btn">Contrast</button>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="control-group">
-            <button id="detailBtn" class="toggle-btn">Detail</button>
-            <div class="export-dropdown">
-              <button id="exportBtn" class="btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                Export
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </button>
-              <div class="export-menu">
-                <button id="exportTxtBtn" class="export-option">Export as TXT</button>
-                <button id="exportJpgBtn" class="export-option">Export as JPG</button>
-                
-              </div>
+            <div class="export-menu">
+              <button id="exportTxtBtn" class="export-option">Export as TXT</button>
+              <button id="exportJpgBtn" class="export-option">Export as JPG</button>
+              
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-        <div class="info">
-          <span class="hint">Scroll: zoom • Drag: pan</span>
-        </div>
+      <div class="info">
+        <span class="hint">Scroll: zoom • Drag: pan</span>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
   async mount() {
     Navbar.mount();
@@ -200,6 +208,7 @@ export class StudioPage implements Page {
         document.getElementById('fileInput')!.click();
       });
       document.getElementById('fileInput')!.addEventListener('change', (e) => this.handleFileUpload(e));
+      document.getElementById('removeImageBtn')!.addEventListener('click', () => this.removeImage());
 
       document.getElementById('grayscaleBtn')!.addEventListener('click', () => this.setColorMode('grayscale'));
       document.getElementById('colorBtn')!.addEventListener('click', () => this.setColorMode('color'));
@@ -309,19 +318,26 @@ private stopCamera() {
     this.camera.stop();
   }
 
+  // Clear canvas
+  this.clearCanvas();
+  this.currentFrameData = null;
+
   // Update UI
   const cameraBtn = document.getElementById('cameraBtn');
   const cameraText = document.getElementById('cameraText');
   const cameraStatus = document.getElementById('cameraStatus');
   const switchBtn = document.getElementById('switchCameraBtn');
+  const removeBtn = document.getElementById('removeImageBtn');
   
   if (cameraBtn) cameraBtn.classList.remove('camera-active');
   if (cameraText) cameraText.textContent = 'Camera';
   if (cameraStatus) cameraStatus.classList.remove('active');
   if (switchBtn) switchBtn.style.display = 'none';
+  if (removeBtn) removeBtn.style.display = 'none';
   
   this.showSuccessMessage('Camera stopped');
 }
+
 
  private async startCamera() {
   try {
@@ -360,54 +376,23 @@ private stopCamera() {
   }
 }
 
- // Replace the switchCamera method with this simplified version:
-private async switchCamera() {
-  if (!this.camera?.isActive()) {
-    this.showErrorMessage('Camera is not active');
-    return;
-  }
-
-  try {
-    const beforeFacingMode = this.camera.getCurrentFacingMode();
-    const beforeActualMode = this.camera.getActualFacingMode();
-    
-    console.log('Before switch - Requested:', beforeFacingMode, 'Actual:', beforeActualMode);
-    
-    // Simply call the camera controller's switch method
-    // It handles all the logic internally now
-    await this.camera.switchCamera();
-    
-    // Give camera a moment to stabilize
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const afterFacingMode = this.camera.getCurrentFacingMode();
-    const afterActualMode = this.camera.getActualFacingMode();
-    
-    console.log('After switch - Requested:', afterFacingMode, 'Actual:', afterActualMode);
-    
-    // Check if camera actually switched
-    if (afterActualMode && afterActualMode === beforeActualMode) {
-      this.showErrorMessage('Camera did not switch. Your device may only have one camera.');
+  private async switchCamera() {
+    if (!this.camera?.isActive()) {
+      this.showErrorMessage('Camera is not active');
       return;
     }
-    
-    const cameraName = afterFacingMode === 'user' ? 'front' : 'back';
-    const actualCameraName = afterActualMode === 'user' ? 'front' : 
-                            afterActualMode === 'environment' ? 'back' : 'unknown';
-    
-    const resolution = this.camera.getResolution();
-    const message = `Switched to ${cameraName} camera (${actualCameraName}) - ${resolution.width}x${resolution.height}`;
-    
-    this.showSuccessMessage(message);
-    
-    // Log camera info
-    console.log(`Cameras available: ${this.camera.getCameraCount()}`);
-    
-  } catch (error) {
-    console.error('Failed to switch camera:', error);
-    this.showErrorMessage('Failed to switch camera. Check console for details.');
+
+    try {
+      await this.camera.switchCamera();
+      const newMode = this.camera.getCurrentFacingMode();
+      console.log('Camera switched to:', newMode);
+      this.showSuccessMessage(`Switched to ${newMode === 'user' ? 'front' : 'back'} camera`);
+    } catch (error) {
+      console.error('Failed to switch camera:', error);
+      this.showErrorMessage('Failed to switch camera');
+    }
   }
-}
+
   private processLoop = () => {
     if (!this.camera?.isActive()) return;
 
@@ -421,55 +406,60 @@ private async switchCamera() {
   }
 
   private handleFileUpload(e: Event) {
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
-      this.animationId = null;
+  if (this.animationId) {
+    cancelAnimationFrame(this.animationId);
+    this.animationId = null;
+  }
+  if (this.camera) {
+    this.camera.stop();
+    
+    const switchBtn = document.getElementById('switchCameraBtn');
+    if (switchBtn) {
+      switchBtn.style.display = 'none';
     }
-    if (this.camera) {
-      this.camera.stop();
-      
-      // Hide switch camera button when uploading image
-      const switchBtn = document.getElementById('switchCameraBtn');
-      if (switchBtn) {
-        switchBtn.style.display = 'none';
-      }
-    }
+  }
 
-    if (this.camera?.isActive()) {
+  if (this.camera?.isActive()) {
     this.stopCamera();
   }
 
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (!file) return;
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      this.showErrorMessage('Please select a valid image file');
-      return;
-    }
-
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, img.width, img.height);
-      this.currentFrameData = { data: imageData.data, width: img.width, height: img.height };
-      
-      // Calculate proper dimensions for container
-      this.calculateTargetDimensions(img.width, img.height);
-      
-      this.processFrameData(imageData.data, img.width, img.height);
-      this.showSuccessMessage('Image loaded successfully!');
-    };
-    
-    img.onerror = () => {
-      this.showErrorMessage('Failed to load image');
-    };
-
-    img.src = URL.createObjectURL(file);
+  if (!file.type.startsWith('image/')) {
+    this.showErrorMessage('Please select a valid image file');
+    return;
   }
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(img, 0, 0);
+    const imageData = ctx.getImageData(0, 0, img.width, img.height);
+    this.currentFrameData = { data: imageData.data, width: img.width, height: img.height };
+    
+    this.calculateTargetDimensions(img.width, img.height);
+    this.processFrameData(imageData.data, img.width, img.height);
+    
+    // Show remove button
+    const removeBtn = document.getElementById('removeImageBtn');
+    if (removeBtn) {
+      removeBtn.style.display = 'flex';
+    }
+    
+    this.showSuccessMessage('Image loaded successfully!');
+  };
+  
+  img.onerror = () => {
+    this.showErrorMessage('Failed to load image');
+  };
+
+  img.src = URL.createObjectURL(file);
+}
+
 
   private processFrameData(rgba: Uint8ClampedArray, width: number, height: number) {
     try {
@@ -712,6 +702,45 @@ private async switchCamera() {
         
 //         return new Blob([pdf], { type: 'application/pdf' });
 //       }
+  private clearCanvas() {
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Reset canvas size
+      canvas.width = 0;
+      canvas.height = 0;
+    }
+  }
+  this.targetWidth = 0;
+  this.targetHeight = 0;
+}
+
+private removeImage() {
+  if (this.animationId) {
+    cancelAnimationFrame(this.animationId);
+    this.animationId = null;
+  }
+
+  this.clearCanvas();
+  this.currentFrameData = null;
+
+  // Hide remove button
+  const removeBtn = document.getElementById('removeImageBtn');
+  if (removeBtn) {
+    removeBtn.style.display = 'none';
+  }
+
+  // Reset file input
+  const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+  if (fileInput) {
+    fileInput.value = '';
+  }
+
+  this.showSuccessMessage('Image removed');
+}
+
 
   private showErrorMessage(text: string) {
   const message = document.createElement('div');
