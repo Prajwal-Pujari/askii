@@ -17,6 +17,8 @@ export class StudioPage implements Page {
   private targetWidth: number = 0;
   private targetHeight: number = 0;
   private isControlsCollapsed: boolean = false;
+  private readonly MAX_IMAGE_DIMENSION = 1920; // Maximum width or height
+  // private readonly COMPRESSION_QUALITY = 0.85; // JPEG quality for compression
 
   render(): string {
   return `
@@ -65,7 +67,7 @@ export class StudioPage implements Page {
             </svg>
             Upload
           </button>
-          <input type="file" id="fileInput" accept="image/*" style="display:none;">
+          <input type="file" id="fileInput" accept="image/*,.heic,.heif,.HEIC" style="display:none;">
           
           <button id="removeImageBtn" class="btn" style="display: none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -96,7 +98,17 @@ export class StudioPage implements Page {
 
         <div class="control-group">
           <button id="detailBtn" class="toggle-btn">Detail</button>
+          <button id="resetViewBtn" class="btn" style="display: none;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                <path d="M21 3v5h-5"></path>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                <path d="M3 21v-5h5"></path>
+              </svg>
+              Reset
+            </button>
           <div class="export-dropdown">
+            
             <button id="exportBtn" class="btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -130,6 +142,7 @@ export class StudioPage implements Page {
     await this.initStudio();
     this.setupResizeHandler();
     this.setupControlsToggle();
+    this.setupMobileTouchZoom();
   }
 
   unmount() {
@@ -171,6 +184,51 @@ export class StudioPage implements Page {
       }
     });
   }
+}
+
+  private setupMobileTouchZoom() {
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+  if (!canvas) return;
+
+  let initialDistance = 0;
+  let currentZoom = 1;
+
+  const getDistance = (touch1: Touch, touch2: Touch) => {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      initialDistance = getDistance(e.touches[0], e.touches[1]);
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2 && this.renderer) {
+      e.preventDefault();
+      
+      const currentDistance = getDistance(e.touches[0], e.touches[1]);
+      const delta = currentDistance - initialDistance;
+      
+      // Calculate zoom factor
+      const zoomChange = delta * 0.005;
+      currentZoom = Math.max(0.5, Math.min(5, currentZoom + zoomChange));
+      
+      // Apply zoom through renderer
+      this.renderer.setZoom(currentZoom);
+      
+      initialDistance = currentDistance;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', (e) => {
+    if (e.touches.length < 2) {
+      initialDistance = 0;
+    }
+  });
 }
 
   private calculateTargetDimensions(imageWidth: number, imageHeight: number) {
@@ -226,6 +284,7 @@ export class StudioPage implements Page {
    exportBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   exportDropdown.classList.toggle('show-menu');
+    
 });
 
 // Close dropdown when clicking outside
@@ -255,6 +314,45 @@ document.getElementById('exportJpgBtn')!.addEventListener('click', () => {
 //   exportDropdown.classList.remove('show-menu');
 //   this.exportAsPDF();
 // });
+
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      // Reset view button
+      const resetViewBtn = document.getElementById('resetViewBtn');
+      if (resetViewBtn) {
+        resetViewBtn.style.display = 'flex';
+        
+        resetViewBtn.addEventListener('click', () => {
+          if (this.renderer) {
+            this.renderer.resetView();
+            this.showSuccessMessage('View reset to default');
+          }
+        });
+      }
+
+      // Zoom buttons (if you add them later)
+      const zoomInBtn = document.getElementById('zoomInBtn');
+      const zoomOutBtn = document.getElementById('zoomOutBtn');
+      
+      if (zoomInBtn && zoomOutBtn) {
+        zoomInBtn.style.display = 'flex';
+        zoomOutBtn.style.display = 'flex';
+        
+        zoomInBtn.addEventListener('click', () => {
+          if (this.renderer) {
+            const currentZoom = this.renderer.getZoom();
+            this.renderer.setZoom(currentZoom + 0.2);
+          }
+        });
+        
+        zoomOutBtn.addEventListener('click', () => {
+          if (this.renderer) {
+            const currentZoom = this.renderer.getZoom();
+            this.renderer.setZoom(currentZoom - 0.2);
+          }
+        });
+      }
+    }
 
 
       this.renderer.onZoomChange(() => {
@@ -405,7 +503,7 @@ private stopCamera() {
     this.animationId = requestAnimationFrame(this.processLoop);
   }
 
-  private handleFileUpload(e: Event) {
+  private async handleFileUpload(e: Event) {
   if (this.animationId) {
     cancelAnimationFrame(this.animationId);
     this.animationId = null;
@@ -426,39 +524,159 @@ private stopCamera() {
   const file = (e.target as HTMLInputElement).files?.[0];
   if (!file) return;
 
-  if (!file.type.startsWith('image/')) {
+  // Check if it's HEIC/HEIF format
+  const fileName = file.name.toLowerCase();
+  const isHeic = fileName.endsWith('.heic') || fileName.endsWith('.heif');
+  
+  if (!file.type.startsWith('image/') && !isHeic) {
     this.showErrorMessage('Please select a valid image file');
     return;
   }
 
+  this.showSuccessMessage('Processing image...');
+
+  // Handle HEIC files using createImageBitmap
+  if (isHeic || file.type === 'image/heic' || file.type === 'image/heif') {
+    try {
+      const bitmap = await createImageBitmap(file);
+      this.processBitmap(bitmap);
+      return;
+    } catch (error) {
+      console.error('HEIC processing failed:', error);
+      this.showErrorMessage('Failed to process HEIC file. Your browser may not support this format.');
+      return;
+    }
+  }
+
+  // Handle regular image files
   const img = new Image();
   img.onload = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext('2d')!;
-    ctx.drawImage(img, 0, 0);
-    const imageData = ctx.getImageData(0, 0, img.width, img.height);
-    this.currentFrameData = { data: imageData.data, width: img.width, height: img.height };
-    
-    this.calculateTargetDimensions(img.width, img.height);
-    this.processFrameData(imageData.data, img.width, img.height);
-    
-    // Show remove button
-    const removeBtn = document.getElementById('removeImageBtn');
-    if (removeBtn) {
-      removeBtn.style.display = 'flex';
-    }
-    
-    this.showSuccessMessage('Image loaded successfully!');
+    this.processImageElement(img);
+    URL.revokeObjectURL(img.src);
   };
   
   img.onerror = () => {
     this.showErrorMessage('Failed to load image');
+    URL.revokeObjectURL(img.src);
   };
 
   img.src = URL.createObjectURL(file);
 }
+
+// Add helper method for ImageBitmap
+private processBitmap(bitmap: ImageBitmap) {
+  let targetWidth = bitmap.width;
+  let targetHeight = bitmap.height;
+  
+  const originalWidth = bitmap.width;
+  const originalHeight = bitmap.height;
+  
+  // Scale down if image is too large
+  if (targetWidth > this.MAX_IMAGE_DIMENSION || targetHeight > this.MAX_IMAGE_DIMENSION) {
+    const scale = Math.min(
+      this.MAX_IMAGE_DIMENSION / targetWidth,
+      this.MAX_IMAGE_DIMENSION / targetHeight
+    );
+    targetWidth = Math.floor(targetWidth * scale);
+    targetHeight = Math.floor(targetHeight * scale);
+  }
+
+  // Create canvas for processing
+  const canvas = document.createElement('canvas');
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const ctx = canvas.getContext('2d', { 
+    alpha: false,
+    willReadFrequently: true 
+  })!;
+  
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
+  
+  const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+  
+  this.currentFrameData = { 
+    data: imageData.data, 
+    width: targetWidth, 
+    height: targetHeight 
+  };
+  
+  this.calculateTargetDimensions(targetWidth, targetHeight);
+  this.processFrameData(imageData.data, targetWidth, targetHeight);
+  
+  const removeBtn = document.getElementById('removeImageBtn');
+  if (removeBtn) {
+    removeBtn.style.display = 'flex';
+  }
+  
+  const compressionMsg = (originalWidth !== targetWidth || originalHeight !== targetHeight)
+    ? ` (optimized from ${originalWidth}×${originalHeight})`
+    : '';
+  this.showSuccessMessage(`Image loaded successfully!${compressionMsg}`);
+  
+  bitmap.close();
+}
+
+// Add helper method for HTMLImageElement
+private processImageElement(img: HTMLImageElement) {
+  let targetWidth = img.width;
+  let targetHeight = img.height;
+  
+  const originalWidth = img.width;
+  const originalHeight = img.height;
+  
+  // Scale down if image is too large
+  if (targetWidth > this.MAX_IMAGE_DIMENSION || targetHeight > this.MAX_IMAGE_DIMENSION) {
+    const scale = Math.min(
+      this.MAX_IMAGE_DIMENSION / targetWidth,
+      this.MAX_IMAGE_DIMENSION / targetHeight
+    );
+    targetWidth = Math.floor(targetWidth * scale);
+    targetHeight = Math.floor(targetHeight * scale);
+  }
+
+  // Create canvas for resizing
+  const canvas = document.createElement('canvas');
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const ctx = canvas.getContext('2d', { 
+    alpha: false,
+    willReadFrequently: true 
+  })!;
+  
+  // Use better image smoothing
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  
+  // Draw resized image
+  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+  
+  // Get image data
+  const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+  
+  // Store processed data
+  this.currentFrameData = { 
+    data: imageData.data, 
+    width: targetWidth, 
+    height: targetHeight 
+  };
+  
+  this.calculateTargetDimensions(targetWidth, targetHeight);
+  this.processFrameData(imageData.data, targetWidth, targetHeight);
+  
+  // Show remove button
+  const removeBtn = document.getElementById('removeImageBtn');
+  if (removeBtn) {
+    removeBtn.style.display = 'flex';
+  }
+  
+  const compressionMsg = (originalWidth !== targetWidth || originalHeight !== targetHeight)
+    ? ` (optimized from ${originalWidth}×${originalHeight})`
+    : '';
+  this.showSuccessMessage(`Image loaded successfully!${compressionMsg}`);
+}
+
 
 
   private processFrameData(rgba: Uint8ClampedArray, width: number, height: number) {

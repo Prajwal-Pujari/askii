@@ -39,23 +39,30 @@ pub fn process_frame_with_color(
         ASCII_CHARS
     };
 
+    let pixels_per_block = block_size * block_size;
+
     for grid_y in 0..grid_height {
         for grid_x in 0..grid_width {
+            let start_x = grid_x * block_size;
+            let start_y = grid_y * block_size;
+            let end_x = (start_x + block_size).min(width);
+            let end_y = (start_y + block_size).min(height);
+
             let mut sum_gray: u32 = 0;
             let mut sum_r: u32 = 0;
             let mut sum_g: u32 = 0;
             let mut sum_b: u32 = 0;
             let mut count: u32 = 0;
 
-            let start_x = grid_x * block_size;
-            let start_y = grid_y * block_size;
-            let end_x = (start_x + block_size).min(width);
-            let end_y = (start_y + block_size).min(height);
-
+            // Optimized inner loop with better memory access pattern
             for y in start_y..end_y {
+                let row_start = y * width * 4;
                 for x in start_x..end_x {
-                    let idx = (y * width + x) * 4;
-                    if idx + 2 < rgba_buffer.len() {
+                    let idx = row_start + x * 4;
+                    
+                    // Bounds check once per pixel
+                    if idx + 3 < rgba_buffer.len() {
+                        // Load values once
                         let r = rgba_buffer[idx] as u32;
                         let g = rgba_buffer[idx + 1] as u32;
                         let b = rgba_buffer[idx + 2] as u32;
@@ -64,22 +71,22 @@ pub fn process_frame_with_color(
                         sum_g += g;
                         sum_b += b;
                         
-                        // Grayscale for ASCII selection
-                        sum_gray += (299 * r + 587 * g + 114 * b) / 1000;
+                        // Optimized grayscale calculation (approximation)
+                        sum_gray += (r * 3 + g * 6 + b) / 10;
                         count += 1;
                     }
                 }
             }
 
             if count > 0 {
-                let avg_gray = (sum_gray / count) as u8;
-                let avg_r = (sum_r / count) as u8;
-                let avg_g = (sum_g / count) as u8;
-                let avg_b = (sum_b / count) as u8;
+                let avg_gray = (sum_gray / count).min(255) as u8;
+                let avg_r = (sum_r / count).min(255) as u8;
+                let avg_g = (sum_g / count).min(255) as u8;
+                let avg_b = (sum_b / count).min(255) as u8;
 
-                // Select ASCII character
+                // Select ASCII character with bounds check
                 let char_index = ((avg_gray as usize) * (ascii_set.len() - 1)) / 255;
-                chars.push(ascii_set[char_index]);
+                chars.push(ascii_set[char_index.min(ascii_set.len() - 1)]);
 
                 // Store RGB color
                 colors.push(avg_r);

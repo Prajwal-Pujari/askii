@@ -21,6 +21,31 @@ export class AsciiRenderer {
     this.onZoomCallback = callback;
   }
 
+  setZoom(zoom: number): void {
+  this.zoomLevel = Math.max(0.3, Math.min(10, zoom));
+  
+  if (this.onZoomCallback) {
+    this.onZoomCallback();
+  }
+}
+
+// Add this method to get current zoom
+getZoom(): number {
+  return this.zoomLevel;
+}
+
+// Add this method to reset zoom and pan
+resetView(): void {
+  this.zoomLevel = 1;
+  this.offsetX = 0;
+  this.offsetY = 0;
+  
+  if (this.onZoomCallback) {
+    this.onZoomCallback();
+  }
+}
+
+
   private setupZoom(): void {
     this.canvas.addEventListener('wheel', (e: WheelEvent) => {
       e.preventDefault();
