@@ -28,15 +28,22 @@ export class LandingPage implements Page {
                   </svg>
                   Launch Studio
                 </a>
-               
               </div>
             </div>
 
             <div class="hero-visual">
               <div class="ascii-preview">
-                <pre class="ascii-art">
-         
-                </pre>
+                <div class="image-comparison-container">
+                  <div class="image-wrapper" id="imageWrapper">
+                    <img id="baseImage" class="base-image" src="../public/eern.jpg" alt="Original Image">
+                    <img id="overlayImage" class="overlay-image" src="../public/askii4.jpeg" alt="ASCII Version">
+                    
+                  </div>
+                  <div class="comparison-label">
+                    <span class="label-left">Original</span>
+                    <span class="label-right">ASCII Art</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -106,5 +113,65 @@ export class LandingPage implements Page {
 
   mount() {
     Navbar.mount();
+    this.initImageComparison();
+  }
+
+  private initImageComparison() {
+    const imageWrapper = document.getElementById('imageWrapper');
+    const overlayImage = document.getElementById('overlayImage') as HTMLImageElement;
+    const revealRadius = 60;
+    const trailDuration = 600;
+    let trailCircles: HTMLDivElement[] = [];
+
+    if (!imageWrapper || !overlayImage) return;
+
+    const createTrailCircle = (x: number, y: number) => {
+      const trail = document.createElement('div');
+      trail.className = 'cursor-trail';
+      trail.style.left = x + 'px';
+      trail.style.top = y + 'px';
+      imageWrapper.appendChild(trail);
+      trailCircles.push(trail);
+
+      setTimeout(() => {
+        trail.style.opacity = '0';
+        trail.style.transform = 'translate(-50%, -50%) scale(1.5)';
+      }, 10);
+
+      setTimeout(() => {
+        if (trail.parentNode) {
+          trail.parentNode.removeChild(trail);
+        }
+        trailCircles = trailCircles.filter(t => t !== trail);
+      }, trailDuration);
+    };
+
+    let lastTrailTime = 0;
+    const trailInterval = 80;
+
+    imageWrapper.addEventListener('mousemove', (e: MouseEvent) => {
+      const rect = imageWrapper.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      overlayImage.style.clipPath = `circle(${revealRadius}px at ${x}px ${y}px)`;
+
+      const now = Date.now();
+      if (now - lastTrailTime > trailInterval) {
+        createTrailCircle(x, y);
+        lastTrailTime = now;
+      }
+    });
+
+    imageWrapper.addEventListener('mouseleave', () => {
+      overlayImage.style.clipPath = 'circle(0px at 0px 0px)';
+      
+      trailCircles.forEach(trail => {
+        if (trail.parentNode) {
+          trail.parentNode.removeChild(trail);
+        }
+      });
+      trailCircles = [];
+    });
   }
 }
