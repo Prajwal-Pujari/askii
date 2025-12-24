@@ -35,8 +35,8 @@ export class LandingPage implements Page {
               <div class="ascii-preview">
                 <div class="image-comparison-container">
                   <div class="image-wrapper" id="imageWrapper">
-                    <img id="baseImage" class="base-image" src="../public/eern.jpg" alt="Original Image">
-                    <img id="overlayImage" class="overlay-image" src="../public/askii4.jpeg" alt="ASCII Version">
+                    <img id="baseImage" class="base-image" src="/eern.jpg" alt="Original Image">
+                    <img id="overlayImage" class="overlay-image" src="/askii4.jpeg" alt="ASCII Version">
                     
                   </div>
                   <div class="comparison-label">
