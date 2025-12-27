@@ -19,86 +19,85 @@ export class StudioPage implements Page {
   private isControlsCollapsed: boolean = false;
   private readonly MAX_IMAGE_DIMENSION = 1920; // Maximum width or height
   // private readonly COMPRESSION_QUALITY = 0.85; // JPEG quality for compression
+  private preferredFacingMode: 'user' | 'environment' = 'environment';
 
-  render(): string {
+render(): string {
   return `
-   
-    
     <div class="studio">
       <div class="canvas-container">
         <canvas id="canvas"></canvas>
       </div>
       
       <div class="controls">
-      <button id="toggleControlsBtn" class="toggle-controls-btn" title="Toggle Controls">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
-      
-      <div class="controls-content">
-        <div class="control-group">
-          <button id="cameraBtn" class="btn">
-            <svg id="cameraIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-              <circle cx="12" cy="13" r="4"></circle>
-            </svg>
-            <span id="cameraText">Camera</span>
-            <span id="cameraStatus" class="camera-status"></span>
-          </button>
-          
-          <button id="switchCameraBtn" class="btn" style="display: none;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="17 1 21 5 17 9"></polyline>
-              <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
-              <polyline points="7 23 3 19 7 15"></polyline>
-              <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
-            </svg>
-            Flip
-          </button>
-          
-          <button id="uploadBtn" class="btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="17 8 12 3 7 8"></polyline>
-              <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
-            Upload
-          </button>
-          <input type="file" id="fileInput" accept="image/*,.heic,.heif,.HEIC" style="display:none;">
-          
-          <button id="removeImageBtn" class="btn" style="display: none;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            Remove
-          </button>
-        </div>
+        <button id="toggleControlsBtn" class="toggle-controls-btn" title="Toggle Controls">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        
+        <div class="controls-content">
+          <div class="control-group">
+            <button id="cameraBtn" class="btn">
+              <svg id="cameraIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              <span id="cameraText">Camera</span>
+              <span id="cameraStatus" class="camera-status"></span>
+            </button>
+            
+            <button id="switchCameraBtn" class="btn" style="display: none;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="17 1 21 5 17 9"></polyline>
+                <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                <polyline points="7 23 3 19 7 15"></polyline>
+                <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+              </svg>
+              Flip
+            </button>
+            
+            <button id="uploadBtn" class="btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Upload
+            </button>
+            <input type="file" id="fileInput" accept="image/*,.heic,.heif,.HEIC" style="display:none;">
+            
+            <button id="removeImageBtn" class="btn" style="display: none;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Remove
+            </button>
+          </div>
 
-        <div class="divider"></div>
+          <div class="divider"></div>
 
-        <div class="control-group">
-          <button id="grayscaleBtn" class="mode-btn active">Grayscale</button>
-          <button id="colorBtn" class="mode-btn">Color</button>
-          <button id="ansiBtn" class="mode-btn">ANSI</button>
-        </div>
+          <div class="control-group">
+            <button id="grayscaleBtn" class="mode-btn active">Grayscale</button>
+            <button id="colorBtn" class="mode-btn">Color</button>
+            <button id="ansiBtn" class="mode-btn">ANSI</button>
+          </div>
 
-        <div class="divider"></div>
+          <div class="divider"></div>
 
-        <div class="control-group">
-          <button id="noneFilterBtn" class="filter-btn active">Normal</button>
-          <button id="edgeFilterBtn" class="filter-btn">Edge</button>
-          <button id="contrastFilterBtn" class="filter-btn">Contrast</button>
-        </div>
+          <div class="control-group">
+            <button id="noneFilterBtn" class="filter-btn active">Normal</button>
+            <button id="edgeFilterBtn" class="filter-btn">Edge</button>
+            <button id="contrastFilterBtn" class="filter-btn">Contrast</button>
+          </div>
 
-        <div class="divider"></div>
+          <div class="divider"></div>
 
-        <div class="control-group">
-          <button id="detailBtn" class="toggle-btn">Detail</button>
-          <button id="resetViewBtn" class="btn" style="display: none;">
+          <div class="control-group">
+            <button id="detailBtn" class="toggle-btn">Detail</button>
+            <button id="resetViewBtn" class="btn" style="display: none;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
                 <path d="M21 3v5h-5"></path>
@@ -107,33 +106,37 @@ export class StudioPage implements Page {
               </svg>
               Reset
             </button>
-          <div class="export-dropdown">
             
-            <button id="exportBtn" class="btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              Export
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-            <div class="export-menu">
-              <button id="exportTxtBtn" class="export-option">Export as TXT</button>
-              <button id="exportJpgBtn" class="export-option">Export as JPG</button>
-              
+            <div class="export-dropdown">
+              <button id="exportBtn" class="btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="export-menu">
+                <button id="exportTxtBtn" class="export-option">Export as TXT</button>
+                <button id="exportJpgBtn" class="export-option">Export as JPG</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
       <div class="info">
         <span class="hint">Scroll: zoom • Drag: pan</span>
       </div>
     </div>
+
+    
+
+    <!-- Text Preview Modal -->
+
   `;
 }
 
@@ -143,6 +146,7 @@ export class StudioPage implements Page {
     this.setupResizeHandler();
     this.setupControlsToggle();
     this.setupMobileTouchZoom();
+    this.setupShareModal();
   }
 
   unmount() {
@@ -315,44 +319,44 @@ document.getElementById('exportJpgBtn')!.addEventListener('click', () => {
 //   this.exportAsPDF();
 // });
 
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-      // Reset view button
-      const resetViewBtn = document.getElementById('resetViewBtn');
-      if (resetViewBtn) {
-        resetViewBtn.style.display = 'flex';
+// const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+//     if (isMobile) {
+//       // Reset view button
+//       const resetViewBtn = document.getElementById('resetViewBtn');
+//       if (resetViewBtn) {
+//         resetViewBtn.style.display = 'flex';
         
-        resetViewBtn.addEventListener('click', () => {
-          if (this.renderer) {
-            this.renderer.resetView();
-            this.showSuccessMessage('View reset to default');
-          }
-        });
-      }
+//         resetViewBtn.addEventListener('click', () => {
+//           if (this.renderer) {
+//             this.renderer.resetView();
+//             this.showSuccessMessage('View reset to default');
+//           }
+//         });
+//       }
 
-      // Zoom buttons (if you add them later)
-      const zoomInBtn = document.getElementById('zoomInBtn');
-      const zoomOutBtn = document.getElementById('zoomOutBtn');
+//       // Zoom buttons (if you add them later)
+//       const zoomInBtn = document.getElementById('zoomInBtn');
+//       const zoomOutBtn = document.getElementById('zoomOutBtn');
       
-      if (zoomInBtn && zoomOutBtn) {
-        zoomInBtn.style.display = 'flex';
-        zoomOutBtn.style.display = 'flex';
+//       if (zoomInBtn && zoomOutBtn) {
+//         zoomInBtn.style.display = 'flex';
+//         zoomOutBtn.style.display = 'flex';
         
-        zoomInBtn.addEventListener('click', () => {
-          if (this.renderer) {
-            const currentZoom = this.renderer.getZoom();
-            this.renderer.setZoom(currentZoom + 0.2);
-          }
-        });
+//         zoomInBtn.addEventListener('click', () => {
+//           if (this.renderer) {
+//             const currentZoom = this.renderer.getZoom();
+//             this.renderer.setZoom(currentZoom + 0.2);
+//           }
+//         });
         
-        zoomOutBtn.addEventListener('click', () => {
-          if (this.renderer) {
-            const currentZoom = this.renderer.getZoom();
-            this.renderer.setZoom(currentZoom - 0.2);
-          }
-        });
-      }
-    }
+//         zoomOutBtn.addEventListener('click', () => {
+//           if (this.renderer) {
+//             const currentZoom = this.renderer.getZoom();
+//             this.renderer.setZoom(currentZoom - 0.2);
+//           }
+//         });
+//       }
+//     }
 
 
       this.renderer.onZoomChange(() => {
@@ -443,7 +447,9 @@ private stopCamera() {
       this.camera = new CameraController();
     }
 
-    await this.camera.start(true);
+    // Use the preferred facing mode (environment = back camera)
+    const useFrontCamera = this.preferredFacingMode === 'user';
+    await this.camera.start(useFrontCamera);
     
     const resolution = this.camera.getResolution();
     console.log('Camera started:', {
@@ -460,13 +466,17 @@ private stopCamera() {
     if (cameraText) cameraText.textContent = 'Stop Camera';
     if (cameraStatus) cameraStatus.classList.add('active');
 
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    // Show switch button only on mobile and tablet devices (not laptops/desktops)
+    const isMobileOrTablet = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                             (navigator.maxTouchPoints > 0 && window.innerWidth < 1024);
+    
     const switchBtn = document.getElementById('switchCameraBtn');
-    if (isMobile && switchBtn) {
+    if (switchBtn && isMobileOrTablet) {
       switchBtn.style.display = 'flex';
     }
 
-    this.showSuccessMessage('Camera started successfully!');
+    const cameraType = this.preferredFacingMode === 'user' ? 'front' : 'back';
+    this.showSuccessMessage(`${cameraType} camera started successfully!`);
     this.processLoop();
   } catch (error) {
     console.error('Failed to start camera:', error);
@@ -474,22 +484,77 @@ private stopCamera() {
   }
 }
 
-  private async switchCamera() {
-    if (!this.camera?.isActive()) {
-      this.showErrorMessage('Camera is not active');
-      return;
+ private async switchCamera() {
+  if (!this.camera?.isActive()) {
+    this.showErrorMessage('Camera is not active');
+    return;
+  }
+
+  try {
+    // Show loading indicator - CAST TO HTMLButtonElement
+    const switchBtn = document.getElementById('switchCameraBtn') as HTMLButtonElement;
+    const originalHTML = switchBtn?.innerHTML;
+    if (switchBtn) {
+      switchBtn.disabled = true;
+      switchBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spinning">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+        </svg>
+        Switching...
+      `;
     }
 
-    try {
-      await this.camera.switchCamera();
-      const newMode = this.camera.getCurrentFacingMode();
-      console.log('Camera switched to:', newMode);
-      this.showSuccessMessage(`Switched to ${newMode === 'user' ? 'front' : 'back'} camera`);
-    } catch (error) {
-      console.error('Failed to switch camera:', error);
-      this.showErrorMessage('Failed to switch camera');
+    // Cancel current animation frame to prevent issues
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
     }
+
+    // Switch the camera
+    await this.camera.switchCamera();
+    
+    // Update the preferred mode
+    const newMode = this.camera.getCurrentFacingMode();
+    this.preferredFacingMode = newMode;
+    
+    console.log('✅ Camera switched to:', newMode);
+    
+    // Wait a brief moment for the camera to stabilize
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Restart the processing loop
+    this.processLoop();
+    
+    // Restore button
+    if (switchBtn && originalHTML) {
+      switchBtn.disabled = false;
+      switchBtn.innerHTML = originalHTML;
+    }
+    
+    this.showSuccessMessage(`Switched to ${newMode === 'user' ? 'front' : 'back'} camera`);
+  } catch (error) {
+    console.error('❌ Failed to switch camera:', error);
+    this.showErrorMessage('Failed to switch camera. Please try again.');
+    
+    // Restore button on error - CAST TO HTMLButtonElement
+    const switchBtn = document.getElementById('switchCameraBtn') as HTMLButtonElement;
+    if (switchBtn) {
+      switchBtn.disabled = false;
+      switchBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="17 1 21 5 17 9"></polyline>
+          <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+          <polyline points="7 23 3 19 7 15"></polyline>
+          <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+        </svg>
+        Flip
+      `;
+    }
+    
+    // Restart processing loop even if switch failed
+    this.processLoop();
   }
+}
 
   private processLoop = () => {
     if (!this.camera?.isActive()) return;
@@ -958,6 +1023,231 @@ private removeImage() {
 
   this.showSuccessMessage('Image removed');
 }
+
+private setupShareModal() {
+  const shareBtn = document.getElementById('shareBtn');
+  const shareModal = document.getElementById('shareModal');
+  const closeShareModal = document.getElementById('closeShareModal');
+  const shareAsText = document.getElementById('shareAsText');
+  const shareAsImage = document.getElementById('shareAsImage');
+
+  shareBtn?.addEventListener('click', () => {
+    if (!this.currentFrameData) {
+      this.showErrorMessage('No image to share. Please load an image first.');
+      return;
+    }
+    shareModal?.classList.add('active');
+  });
+
+  closeShareModal?.addEventListener('click', () => {
+    shareModal?.classList.remove('active');
+  });
+
+  shareModal?.addEventListener('click', (e) => {
+    if (e.target === shareModal) {
+      shareModal.classList.remove('active');
+    }
+  });
+
+  shareAsText?.addEventListener('click', () => {
+    this.showTextPreview();
+  });
+
+  shareAsImage?.addEventListener('click', () => {
+    const qualityInput = document.querySelector('input[name="imageQuality"]:checked') as HTMLInputElement;
+    const quality = qualityInput?.value === 'ultra' ? 'ultra' : 'hd';
+    this.shareAsHighResImage(quality);
+    shareModal?.classList.remove('active');
+  });
+}
+
+private showTextPreview() {
+  if (!this.currentFrameData) return;
+
+  const shareModal = document.getElementById('shareModal');
+  const textPreviewModal = document.getElementById('textPreviewModal');
+  const asciiTextPreview = document.getElementById('asciiTextPreview');
+  const textLines = document.getElementById('textLines');
+  const textChars = document.getElementById('textChars');
+
+  shareModal?.classList.remove('active');
+
+  try {
+    // Generate ASCII text with optimal width for mobile screens
+    const maxWidth = 60; // Optimal for mobile messaging apps
+    const gridWidth = Math.min(
+      Math.floor(this.currentFrameData.width / this.BLOCK_SIZE),
+      maxWidth
+    );
+    const gridHeight = Math.floor(
+      (this.currentFrameData.height / this.currentFrameData.width) * gridWidth
+    );
+
+    const rgbaArray = new Uint8Array(this.currentFrameData.data);
+    const processed = process_frame_with_color(
+      rgbaArray,
+      this.currentFrameData.width,
+      this.currentFrameData.height,
+      this.BLOCK_SIZE,
+      this.useDetailedChars
+    );
+    const asciiBytes = processed.chars();
+
+    let text = '';
+    for (let y = 0; y < gridHeight; y++) {
+      for (let x = 0; x < gridWidth; x++) {
+        const idx = y * Math.floor(this.currentFrameData.width / this.BLOCK_SIZE) + x;
+        if (idx < asciiBytes.length) {
+          text += String.fromCharCode(asciiBytes[idx]);
+        }
+      }
+      text += '\n';
+    }
+
+    if (asciiTextPreview) asciiTextPreview.textContent = text;
+    if (textLines) textLines.textContent = `Lines: ${gridHeight}`;
+    if (textChars) textChars.textContent = `Characters: ${text.length}`;
+
+    textPreviewModal?.classList.add('active');
+
+    // Setup preview modal actions
+    this.setupTextPreviewActions(text);
+  } catch (error) {
+    console.error('Text preview error:', error);
+    this.showErrorMessage('Failed to generate text preview');
+  }
+}
+
+private setupTextPreviewActions(asciiText: string) {
+  const closeTextPreview = document.getElementById('closeTextPreview');
+  const copyAsciiText = document.getElementById('copyAsciiText');
+  const downloadAsciiText = document.getElementById('downloadAsciiText');
+  const textPreviewModal = document.getElementById('textPreviewModal');
+
+  closeTextPreview?.addEventListener('click', () => {
+    textPreviewModal?.classList.remove('active');
+  });
+
+  textPreviewModal?.addEventListener('click', (e) => {
+    if (e.target === textPreviewModal) {
+      textPreviewModal.classList.remove('active');
+    }
+  });
+
+  copyAsciiText?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(asciiText);
+      this.showSuccessMessage('ASCII art copied! Paste it in any messaging app.');
+    } catch (error) {
+      this.showErrorMessage('Failed to copy. Please select and copy manually.');
+    }
+  });
+
+  downloadAsciiText?.addEventListener('click', () => {
+    const blob = new Blob([asciiText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ascii-art-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.showSuccessMessage('ASCII text downloaded!');
+  });
+}
+
+private async shareAsHighResImage(quality: 'hd' | 'ultra') {
+  if (!this.currentFrameData) return;
+
+  this.showSuccessMessage('Generating high-resolution image...');
+
+  try {
+    // Calculate high-res dimensions
+    const multiplier = quality === 'ultra' ? 4 : 2; // 4K or 2K
+    const charWidth = 8 * multiplier;
+    const charHeight = 16 * multiplier;
+
+    const gridWidth = Math.floor(this.currentFrameData.width / this.BLOCK_SIZE);
+    const gridHeight = Math.floor(this.currentFrameData.height / this.BLOCK_SIZE);
+
+    const canvasWidth = gridWidth * charWidth;
+    const canvasHeight = gridHeight * charHeight;
+
+    // Create high-res canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    const ctx = canvas.getContext('2d', { alpha: false })!;
+
+    // High quality settings
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    // Fill background
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // Process and render
+    const rgbaArray = new Uint8Array(this.currentFrameData.data);
+    const processed = process_frame_with_color(
+      rgbaArray,
+      this.currentFrameData.width,
+      this.currentFrameData.height,
+      this.BLOCK_SIZE,
+      true // Use detailed chars for better quality
+    );
+
+    const asciiBytes = processed.chars();
+    const colorBytes = processed.colors();
+
+    // High-quality font settings
+    const fontSize = charHeight * 0.9;
+    ctx.font = `${fontSize}px "Courier New", monospace`;
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+
+    // Render each character with color
+    for (let y = 0; y < gridHeight; y++) {
+      for (let x = 0; x < gridWidth; x++) {
+        const idx = y * gridWidth + x;
+        const char = String.fromCharCode(asciiBytes[idx]);
+        const r = colorBytes[idx * 3];
+        const g = colorBytes[idx * 3 + 1];
+        const b = colorBytes[idx * 3 + 2];
+
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.fillText(char, x * charWidth, y * charHeight);
+      }
+    }
+
+    // Export as high-quality JPEG
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          this.showErrorMessage('Failed to generate image');
+          return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ascii-art-${quality}-${Date.now()}.jpg`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        const resolution = quality === 'ultra' ? '4K' : '2K';
+        this.showSuccessMessage(
+          `${resolution} image exported! (${canvasWidth}×${canvasHeight}px)`
+        );
+      },
+      'image/jpeg',
+      0.95
+    );
+  } catch (error) {
+    console.error('High-res export error:', error);
+    this.showErrorMessage('Failed to generate high-resolution image');
+  }
+}
+
 
 
   private showErrorMessage(text: string) {

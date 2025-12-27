@@ -3,31 +3,42 @@ export class CameraController {
   private video: HTMLVideoElement;
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private facingMode: 'user' | 'environment' = 'user'; // Front or back camera
+  private facingMode: 'user' | 'environment' = 'user';
+  private isStarting: boolean = false; // Prevent multiple simultaneous starts
 
   constructor() {
     this.video = document.createElement('video');
-    this.video.setAttribute('playsinline', ''); // Critical for iOS
+    this.video.setAttribute('playsinline', '');
     this.video.setAttribute('autoplay', '');
     this.video.setAttribute('muted', '');
-    this.video.style.display = 'none'; // Hide video element
-    document.body.appendChild(this.video); // Must be in DOM for iOS
+    this.video.style.display = 'none';
+    document.body.appendChild(this.video);
     
     this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d')!;
   }
 
   async start(useFrontCamera: boolean = true): Promise<void> {
+    // Prevent multiple simultaneous starts
+    if (this.isStarting) {
+      console.log('Camera start already in progress...');
+      return;
+    }
+
+    this.isStarting = true;
+
     try {
       // Stop existing stream if any
       this.stop();
 
       this.facingMode = useFrontCamera ? 'user' : 'environment';
 
+      console.log('🎥 Starting camera with facingMode:', this.facingMode);
+
       // Mobile-optimized constraints
       const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: this.facingMode,
+          facingMode: { ideal: this.facingMode }, // Use 'ideal' for better fallback
           width: { ideal: 1280, max: 1920 },
           height: { ideal: 720, max: 1080 },
           aspectRatio: { ideal: 16 / 9 }
@@ -38,10 +49,11 @@ export class CameraController {
       // Try with facingMode first
       try {
         this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log('✅ Camera started with facingMode');
       } catch (err) {
-        console.warn('Failed with facingMode, trying without:', err);
+        console.warn('⚠️ Failed with facingMode, trying without:', err);
         
-        // Fallback: try without facingMode (for older browsers)
+        // Fallback: try without facingMode
         const fallbackConstraints: MediaStreamConstraints = {
           video: {
             width: { ideal: 1280, max: 1920 },
@@ -50,44 +62,90 @@ export class CameraController {
           audio: false
         };
         this.stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+        console.log('✅ Camera started without facingMode (fallback)');
       }
 
       // Set video source
       this.video.srcObject = this.stream;
 
-      // Wait for video to be ready
-      await new Promise<void>((resolve, reject) => {
-        this.video.onloadedmetadata = () => {
-          this.video.play()
-            .then(() => {
-              console.log('Camera started successfully');
-              console.log(`Resolution: ${this.video.videoWidth}x${this.video.videoHeight}`);
-              resolve();
-            })
-            .catch(reject);
-        };
+      // Wait for video to be ready with timeout
+      await this.waitForVideoReady();
 
-        // Timeout after 10 seconds
-        setTimeout(() => reject(new Error('Camera timeout')), 10000);
+      console.log('✅ Camera fully initialized:', {
+        facingMode: this.facingMode,
+        resolution: `${this.video.videoWidth}x${this.video.videoHeight}`,
+        readyState: this.video.readyState
       });
 
     } catch (error) {
-      console.error('Camera error:', error);
+      console.error('❌ Camera error:', error);
       this.handleCameraError(error);
       throw error;
+    } finally {
+      this.isStarting = false;
     }
   }
 
+  private async waitForVideoReady(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      // If already ready, resolve immediately
+      if (this.video.readyState >= this.video.HAVE_ENOUGH_DATA) {
+        this.video.play().then(resolve).catch(reject);
+        return;
+      }
+
+      const onReady = () => {
+        cleanup();
+        this.video.play()
+          .then(() => {
+            console.log('📹 Video playing');
+            resolve();
+          })
+          .catch(reject);
+      };
+
+      const onError = (error: any) => {
+        cleanup();
+        reject(error);
+      };
+
+      const cleanup = () => {
+        this.video.removeEventListener('loadedmetadata', onReady);
+        this.video.removeEventListener('error', onError);
+        clearTimeout(timeoutId);
+      };
+
+      this.video.addEventListener('loadedmetadata', onReady);
+      this.video.addEventListener('error', onError);
+
+      // Timeout after 10 seconds
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error('Camera initialization timeout'));
+      }, 10000);
+    });
+  }
+
   async switchCamera(): Promise<void> {
+    console.log('🔄 Switching camera...');
+    
     const newFacingMode = this.facingMode === 'user' ? 'environment' : 'user';
-    await this.start(newFacingMode === 'user');
+    
+    try {
+      // Start new camera (this will stop the old one automatically)
+      await this.start(newFacingMode === 'user');
+      console.log('✅ Camera switched successfully to:', newFacingMode);
+    } catch (error) {
+      console.error('❌ Failed to switch camera:', error);
+      throw error;
+    }
   }
 
   stop(): void {
     if (this.stream) {
       this.stream.getTracks().forEach(track => {
         track.stop();
-        console.log('Camera track stopped');
+        console.log('🛑 Camera track stopped:', track.label);
       });
       this.stream = null;
     }
@@ -106,7 +164,7 @@ export class CameraController {
     const height = this.video.videoHeight;
 
     if (width === 0 || height === 0) {
-      console.warn('Video dimensions are 0');
+      console.warn('⚠️ Video dimensions are 0');
       return null;
     }
 
@@ -123,7 +181,7 @@ export class CameraController {
         height
       };
     } catch (error) {
-      console.error('Frame capture error:', error);
+      console.error('❌ Frame capture error:', error);
       return null;
     }
   }
@@ -162,14 +220,11 @@ export class CameraController {
       errorMessage = 'Camera access requires HTTPS. Please use https:// or localhost.';
     }
 
-    console.error(errorMessage, error);
-    
-    // Show user-friendly error message
+    console.error('📛', errorMessage, error);
     this.showErrorMessage(errorMessage);
   }
 
   private showErrorMessage(message: string): void {
-    // Create error notification
     const errorDiv = document.createElement('div');
     errorDiv.style.cssText = `
       position: fixed;
@@ -190,10 +245,7 @@ export class CameraController {
     errorDiv.textContent = message;
     document.body.appendChild(errorDiv);
 
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      errorDiv.remove();
-    }, 5000);
+    setTimeout(() => errorDiv.remove(), 5000);
   }
 
   destroy(): void {
