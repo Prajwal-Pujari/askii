@@ -1,11 +1,14 @@
 import type { Page } from '../router/Router';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import '../styles/landing.css';
 
+// Register ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger);
+
 export class LandingPage implements Page {
-  private gsap: any;
-  private scrollTrigger: any;
   private resizeObserver: ResizeObserver | null = null;
 
   render(): string {
@@ -18,11 +21,10 @@ export class LandingPage implements Page {
           <div class="ascii-bg" id="asciiBg"></div>
           
           <div class="hero-content-light">
-            
-            
             <h1 class="hero-title-light">
               <span class="title-top">Transform Reality Into</span>
               <span class="title-main">ASCII Art</span>
+              
               <span class="title-accent">████▓▓▓▒▒▒░░░</span>
             </h1>
             
@@ -235,7 +237,6 @@ crate-type = ["cdylib"]</code></pre>
           <div class="cta-box">
             <div class="cta-glow"></div>
             <div class="cta-content">
-             
               <h2 class="cta-title">Start Creating Today</h2>
               <p class="cta-desc">Transform your photos into ASCII masterpieces</p>
               <a href="/studio" class="btn-cta-light" data-link>
@@ -256,7 +257,6 @@ crate-type = ["cdylib"]</code></pre>
 
   async mount() {
     Navbar.mount();
-    await this.loadGSAP();
     this.initAnimations();
     this.initImageReveal();
     this.initASCIIBackground();
@@ -267,54 +267,27 @@ crate-type = ["cdylib"]</code></pre>
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
-  }
-
-  private async loadGSAP() {
-    if (typeof window !== 'undefined' && !(window as any).gsap) {
-      const gsapScript = document.createElement('script');
-      gsapScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js';
-      document.head.appendChild(gsapScript);
-
-      const scrollTriggerScript = document.createElement('script');
-      scrollTriggerScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js';
-      document.head.appendChild(scrollTriggerScript);
-
-      await new Promise((resolve) => {
-        scrollTriggerScript.onload = resolve;
-      });
-    }
-
-    this.gsap = (window as any).gsap;
-    this.scrollTrigger = (window as any).ScrollTrigger;
-    this.gsap.registerPlugin(this.scrollTrigger);
+    // Kill all ScrollTrigger instances
+    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
   }
 
   private initAnimations() {
-    if (!this.gsap) return;
-
     // Hero animations
-    this.gsap.from('.hero-badge-light', {
-      scale: 0,
-      opacity: 0,
-      duration: 0.5,
-      ease: 'back.out(2)'
-    });
-
-    this.gsap.from('.title-top', {
+    gsap.from('.title-top', {
       y: 50,
       opacity: 0,
       duration: 0.8,
       delay: 0.2
     });
 
-    this.gsap.from('.title-main', {
+    gsap.from('.title-main', {
       y: 50,
       opacity: 0,
       duration: 0.8,
       delay: 0.4
     });
 
-    this.gsap.from('.title-accent', {
+    gsap.from('.title-accent', {
       scaleX: 0,
       opacity: 0,
       duration: 0.8,
@@ -322,21 +295,21 @@ crate-type = ["cdylib"]</code></pre>
       transformOrigin: 'left'
     });
 
-    this.gsap.from('.hero-desc-light', {
+    gsap.from('.hero-desc-light', {
       y: 30,
       opacity: 0,
       duration: 0.6,
       delay: 0.8
     });
 
-    this.gsap.from('.hero-cta-light', {
+    gsap.from('.hero-cta-light', {
       y: 30,
       opacity: 0,
       duration: 0.6,
       delay: 1
     });
 
-    this.gsap.from('.metric-item', {
+    gsap.from('.metric-item', {
       y: 20,
       opacity: 0,
       stagger: 0.1,
@@ -344,7 +317,7 @@ crate-type = ["cdylib"]</code></pre>
       delay: 1.2
     });
 
-    this.gsap.from('.preview-card', {
+    gsap.from('.preview-card', {
       x: 100,
       opacity: 0,
       duration: 1,
@@ -353,8 +326,8 @@ crate-type = ["cdylib"]</code></pre>
     });
 
     // Feature boxes
-    this.gsap.utils.toArray('.feature-box').forEach((box: any, i: number) => {
-      this.gsap.from(box, {
+    gsap.utils.toArray('.feature-box').forEach((box: any, i: number) => {
+      gsap.from(box, {
         scrollTrigger: {
           trigger: box,
           start: 'top 90%',
@@ -369,7 +342,7 @@ crate-type = ["cdylib"]</code></pre>
     });
 
     // Tech section
-    this.gsap.from('.tech-code', {
+    gsap.from('.tech-code', {
       scrollTrigger: {
         trigger: '.tech-light',
         start: 'top 75%'
@@ -379,7 +352,7 @@ crate-type = ["cdylib"]</code></pre>
       duration: 0.8
     });
 
-    this.gsap.from('.tech-info', {
+    gsap.from('.tech-info', {
       scrollTrigger: {
         trigger: '.tech-light',
         start: 'top 75%'
@@ -390,7 +363,7 @@ crate-type = ["cdylib"]</code></pre>
     });
 
     // CTA
-    this.gsap.from('.cta-content', {
+    gsap.from('.cta-content', {
       scrollTrigger: {
         trigger: '.cta-light',
         start: 'top 80%'
@@ -406,7 +379,7 @@ crate-type = ["cdylib"]</code></pre>
       const text = codeContent.textContent || '';
       codeContent.textContent = '';
       
-      this.gsap.to(codeContent, {
+      gsap.to(codeContent, {
         scrollTrigger: {
           trigger: '.tech-light',
           start: 'top 70%',

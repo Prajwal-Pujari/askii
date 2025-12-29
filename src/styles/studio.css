@@ -818,6 +818,105 @@
     transform: rotate(360deg);
   }
 }
+.capture-btn {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 4px solid rgba(0, 0, 0, 0.8);
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;  /* Changed from cursor: pointer */
+  z-index: 200;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4),
+              0 0 0 4px rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  user-select: none;  /* Prevent text selection while dragging */
+  -webkit-user-select: none;
+  touch-action: none;  /* Prevent default touch behaviors */
+}
+
+.capture-btn:active {
+  cursor: grabbing;
+}
+
+.capture-btn:hover {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5),
+              0 0 0 6px rgba(255, 255, 255, 0.4);
+}
+
+/* When button is being dragged (positioned with left/top instead of transform) */
+.capture-btn[style*="left"] {
+  transform: none !important;
+}
+
+.capture-btn[style*="left"]:hover {
+  transform: scale(1.1) !important;
+}
+
+.capture-btn svg {
+  color: #000;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  pointer-events: none;  /* Prevent SVG from interfering with drag */
+}
+
+.capture-btn svg circle:first-child {
+  stroke-width: 3;
+}
+
+/* Animation when button appears */
+.capture-btn {
+  animation: captureButtonAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes captureButtonAppear {
+  0% {
+    transform: translateX(-50%) scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@media (min-width: 769px) {
+  .capture-btn {
+    bottom: 50px;
+    width: 90px;
+    height: 90px;
+  }
+  
+  .capture-btn svg {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .capture-btn {
+    bottom: 180px; /* Above the bottom controls panel */
+    width: 72px;
+    height: 72px;
+  }
+  
+  .capture-btn svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* When controls are collapsed, move button down */
+  .controls.collapsed ~ .canvas-container .capture-btn {
+    bottom: 80px;
+  }
+}
 
 
 
@@ -866,6 +965,21 @@
     height: 16px;
   }
 
+  .capture-btn {
+    bottom: 140px;
+    width: 64px;
+    height: 64px;
+  }
+  
+  .capture-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .controls.collapsed ~ .canvas-container .capture-btn {
+    bottom: 70px;
+  }
+
 }
 
 /* Small mobile devices */
@@ -898,6 +1012,12 @@
   #resetViewBtn svg {
     width: 14px;
     height: 14px;
+  }
+
+  .capture-btn {
+    bottom: 170px;
+    width: 68px;
+    height: 68px;
   }
 }
 
@@ -937,5 +1057,16 @@
     height: 36px;
     padding: 8px 12px;
     font-size: 11px;
+  }
+
+  .capture-btn {
+    bottom: 160px;
+    width: 64px;
+    height: 64px;
+  }
+  
+  .capture-btn svg {
+    width: 26px;
+    height: 26px;
   }
 }

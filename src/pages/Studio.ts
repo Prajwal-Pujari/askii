@@ -20,12 +20,19 @@ export class StudioPage implements Page {
   private readonly MAX_IMAGE_DIMENSION = 1920; // Maximum width or height
   // private readonly COMPRESSION_QUALITY = 0.85; // JPEG quality for compression
   private preferredFacingMode: 'user' | 'environment' = 'environment';
+  // private isCaptureMode: boolean = false;
 
 render(): string {
   return `
     <div class="studio">
       <div class="canvas-container">
         <canvas id="canvas"></canvas>
+        <button id="captureBtn" class="capture-btn" style="display: none;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+          </svg>
+        </button>
       </div>
       
       <div class="controls">
@@ -147,6 +154,7 @@ render(): string {
     this.setupControlsToggle();
     this.setupMobileTouchZoom();
     this.setupShareModal();
+    this.setupDraggableCapture();
   }
 
   unmount() {
@@ -266,6 +274,7 @@ render(): string {
 
       document.getElementById('cameraBtn')!.addEventListener('click', () => this.toggleCamera());
       document.getElementById('switchCameraBtn')!.addEventListener('click', () => this.switchCamera());
+      // document.getElementById('captureBtn')!.addEventListener('click', () => this.captureImage());
       document.getElementById('uploadBtn')!.addEventListener('click', () => {
         document.getElementById('fileInput')!.click();
       });
@@ -365,7 +374,7 @@ document.getElementById('exportJpgBtn')!.addEventListener('click', () => {
         }
       });
     } catch (error) {
-      console.error('Failed to initialize studio:', error);
+      // console.error('Failed to initialize studio:', error);
       this.showErrorMessage('Failed to initialize. Please refresh the page.');
     }
   }
@@ -429,12 +438,14 @@ private stopCamera() {
   const cameraText = document.getElementById('cameraText');
   const cameraStatus = document.getElementById('cameraStatus');
   const switchBtn = document.getElementById('switchCameraBtn');
+  const captureBtn = document.getElementById('captureBtn');
   const removeBtn = document.getElementById('removeImageBtn');
   
   if (cameraBtn) cameraBtn.classList.remove('camera-active');
   if (cameraText) cameraText.textContent = 'Camera';
   if (cameraStatus) cameraStatus.classList.remove('active');
   if (switchBtn) switchBtn.style.display = 'none';
+  if (captureBtn) captureBtn.style.display = 'none';
   if (removeBtn) removeBtn.style.display = 'none';
   
   this.showSuccessMessage('Camera stopped');
@@ -451,20 +462,22 @@ private stopCamera() {
     const useFrontCamera = this.preferredFacingMode === 'user';
     await this.camera.start(useFrontCamera);
     
-    const resolution = this.camera.getResolution();
-    console.log('Camera started:', {
-      facingMode: this.camera.getCurrentFacingMode(),
-      resolution: `${resolution.width}x${resolution.height}`
-    });
+    // const resolution = this.camera.getResolution();
+    // console.log('Camera started:', {
+    //   facingMode: this.camera.getCurrentFacingMode(),
+    //   resolution: `${resolution.width}x${resolution.height}`
+    // });
 
     // Update UI to show camera is active
     const cameraBtn = document.getElementById('cameraBtn');
     const cameraText = document.getElementById('cameraText');
     const cameraStatus = document.getElementById('cameraStatus');
+    const captureBtn = document.getElementById('captureBtn');
     
     if (cameraBtn) cameraBtn.classList.add('camera-active');
     if (cameraText) cameraText.textContent = 'Stop Camera';
     if (cameraStatus) cameraStatus.classList.add('active');
+    if (captureBtn) captureBtn.style.display = 'flex';
 
     // Show switch button only on mobile and tablet devices (not laptops/desktops)
     const isMobileOrTablet = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
@@ -479,7 +492,7 @@ private stopCamera() {
     this.showSuccessMessage(`${cameraType} camera started successfully!`);
     this.processLoop();
   } catch (error) {
-    console.error('Failed to start camera:', error);
+    // console.error('Failed to start camera:', error);
     this.showErrorMessage('Failed to start camera. Please check permissions.');
   }
 }
@@ -517,7 +530,7 @@ private stopCamera() {
     const newMode = this.camera.getCurrentFacingMode();
     this.preferredFacingMode = newMode;
     
-    console.log('✅ Camera switched to:', newMode);
+    // console.log('✅ Camera switched to:', newMode);
     
     // Wait a brief moment for the camera to stabilize
     await new Promise(resolve => setTimeout(resolve, 300));
@@ -533,7 +546,7 @@ private stopCamera() {
     
     this.showSuccessMessage(`Switched to ${newMode === 'user' ? 'front' : 'back'} camera`);
   } catch (error) {
-    console.error('❌ Failed to switch camera:', error);
+    // console.error('❌ Failed to switch camera:', error);
     this.showErrorMessage('Failed to switch camera. Please try again.');
     
     // Restore button on error - CAST TO HTMLButtonElement
@@ -554,6 +567,39 @@ private stopCamera() {
     // Restart processing loop even if switch failed
     this.processLoop();
   }
+}
+
+private captureImage() {
+  if (!this.camera?.isActive() || !this.currentFrameData) {
+    this.showErrorMessage('Camera not active');
+    return;
+  }
+
+  // Stop the camera and animation loop
+  if (this.animationId) {
+    cancelAnimationFrame(this.animationId);
+    this.animationId = null;
+  }
+  
+  this.camera.stop();
+  // this.isCaptureMode = true;
+
+  // Update UI
+  const cameraBtn = document.getElementById('cameraBtn');
+  const cameraText = document.getElementById('cameraText');
+  const cameraStatus = document.getElementById('cameraStatus');
+  const switchBtn = document.getElementById('switchCameraBtn');
+  const captureBtn = document.getElementById('captureBtn');
+  const removeBtn = document.getElementById('removeImageBtn');
+  
+  if (cameraBtn) cameraBtn.classList.remove('camera-active');
+  if (cameraText) cameraText.textContent = 'Camera';
+  if (cameraStatus) cameraStatus.classList.remove('active');
+  if (switchBtn) switchBtn.style.display = 'none';
+  if (captureBtn) captureBtn.style.display = 'none';
+  if (removeBtn) removeBtn.style.display = 'flex';
+
+  this.showSuccessMessage('Image captured! You can now edit or export it.');
 }
 
   private processLoop = () => {
@@ -607,7 +653,7 @@ private stopCamera() {
       this.processBitmap(bitmap);
       return;
     } catch (error) {
-      console.error('HEIC processing failed:', error);
+      // console.error('HEIC processing failed:', error);
       this.showErrorMessage('Failed to process HEIC file. Your browser may not support this format.');
       return;
     }
@@ -806,7 +852,7 @@ private processImageElement(img: HTMLImageElement) {
         );
       }
     } catch (error) {
-      console.error('Frame processing error:', error);
+      // console.error('Frame processing error:', error);
     }
   }
 
@@ -843,7 +889,7 @@ private processImageElement(img: HTMLImageElement) {
 
       this.showSuccessMessage('ASCII art exported successfully!');
     } catch (error) {
-      console.error('Export error:', error);
+      // console.error('Export error:', error);
       this.showErrorMessage('Failed to export ASCII art');
     }
   }
@@ -872,7 +918,7 @@ private processImageElement(img: HTMLImageElement) {
       this.showSuccessMessage('Image exported successfully!');
     }, 'image/jpeg', 0.95);
   } catch (error) {
-    console.error('Export error:', error);
+    // console.error('Export error:', error);
     this.showErrorMessage('Failed to export image');
   }
 }
@@ -1008,6 +1054,7 @@ private removeImage() {
 
   this.clearCanvas();
   this.currentFrameData = null;
+  // this.isCaptureMode = false;
 
   // Hide remove button
   const removeBtn = document.getElementById('removeImageBtn');
@@ -1022,6 +1069,86 @@ private removeImage() {
   }
 
   this.showSuccessMessage('Image removed');
+}
+
+private setupDraggableCapture() {
+  const captureBtn = document.getElementById('captureBtn') as HTMLElement;
+  if (!captureBtn) return;
+
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let hasMoved = false;
+
+  const handleStart = (e: MouseEvent | TouchEvent) => {
+    isDragging = true;
+    hasMoved = false;
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    const rect = captureBtn.getBoundingClientRect();
+    startX = clientX - rect.left;
+    startY = clientY - rect.top;
+    
+    captureBtn.style.transition = 'none';
+    captureBtn.style.cursor = 'grabbing';
+    e.preventDefault();
+  };
+
+  const handleMove = (e: MouseEvent | TouchEvent) => {
+    if (!isDragging) return;
+    
+    hasMoved = true;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    currentX = clientX - startX;
+    currentY = clientY - startY;
+    
+    // Constrain to viewport
+    const maxX = window.innerWidth - captureBtn.offsetWidth;
+    const maxY = window.innerHeight - captureBtn.offsetHeight;
+    
+    currentX = Math.max(0, Math.min(currentX, maxX));
+    currentY = Math.max(0, Math.min(currentY, maxY));
+    
+    captureBtn.style.left = `${currentX}px`;
+    captureBtn.style.top = `${currentY}px`;
+    captureBtn.style.transform = 'none';
+    captureBtn.style.bottom = 'auto';
+    
+    e.preventDefault();
+  };
+
+  const handleEnd = (e: Event) => {
+    if (!isDragging) return;
+    
+    isDragging = false;
+    captureBtn.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    captureBtn.style.cursor = 'grab';
+    
+    // If didn't move much, treat as click
+    if (!hasMoved) {
+      this.captureImage();
+    }
+    
+    e.preventDefault();
+  };
+
+  // Mouse events
+  captureBtn.addEventListener('mousedown', handleStart);
+  document.addEventListener('mousemove', handleMove);
+  document.addEventListener('mouseup', handleEnd);
+
+  // Touch events
+  captureBtn.addEventListener('touchstart', handleStart, { passive: false });
+  document.addEventListener('touchmove', handleMove, { passive: false });
+  document.addEventListener('touchend', handleEnd, { passive: false });
+
+  captureBtn.style.cursor = 'grab';
 }
 
 private setupShareModal() {
@@ -1113,7 +1240,7 @@ private showTextPreview() {
     // Setup preview modal actions
     this.setupTextPreviewActions(text);
   } catch (error) {
-    console.error('Text preview error:', error);
+    // console.error('Text preview error:', error);
     this.showErrorMessage('Failed to generate text preview');
   }
 }
@@ -1243,7 +1370,7 @@ private async shareAsHighResImage(quality: 'hd' | 'ultra') {
       0.95
     );
   } catch (error) {
-    console.error('High-res export error:', error);
+    // console.error('High-res export error:', error);
     this.showErrorMessage('Failed to generate high-resolution image');
   }
 }
