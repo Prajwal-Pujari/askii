@@ -706,20 +706,6 @@ cd ../..
 
 ---
 
-## 📊 Project Stats
-
-![GitHub stars](https://img.shields.io/github/stars/yourusername/askii?style=social)
-![GitHub forks](https://img.shields.io/github/forks/yourusername/askii?style=social)
-![GitHub issues](https://img.shields.io/github/issues/yourusername/askii)
-
-**Current Stats (v1.0)**:
-- **Total Lines**: ~2,500
-  - Rust: ~600 lines
-  - TypeScript: ~1,200 lines
-  - CSS: ~700 lines
-- **Bundle Size**: ~120KB (gzipped)
-
----
 
 ## 📄 License
 
